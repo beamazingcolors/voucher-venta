@@ -1,116 +1,158 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Sistema de Reservas - Confirmation Voucher</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        html {
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+        }
+        
+        /* Mobile Input Zoom Prevention (iOS Fix) */
+        @media (max-width: 639px) {
+            input, select, textarea {
+                font-size: 16px !important; /* Prevents auto-zoom on iOS focus */
+            }
+        }
+
+        /* Smooth custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f4f4f5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4d4d8;
+            border-radius: 9999px;
+        }
+        
+        /* High definition print styles */
         @media print {
-            body { background: white; color: black; }
+            body { background: white !important; color: black !important; padding: 0 !important; }
             .no-print { display: none !important; }
-            .print-card { border: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .print-card { 
+                border: none !important; 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                width: 100% !important; 
+                max-width: 100% !important; 
+            }
         }
     </style>
 </head>
-<body class="bg-zinc-50 text-zinc-800 min-h-screen antialiased selection:bg-zinc-900 selection:text-white">
+<body class="bg-zinc-100/80 text-zinc-800 min-h-screen antialiased selection:bg-zinc-900 selection:text-white pb-20 lg:pb-8">
 
-    <div class="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+    <div class="max-w-7xl mx-auto px-2.5 py-3 sm:px-4 sm:py-6 md:px-6 md:py-8 grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-8">
         
         <!-- Form Section -->
-        <div id="form-container" class="lg:col-span-5 w-full bg-white p-4 md:p-6 rounded-xl border border-zinc-200 shadow-sm h-fit no-print overflow-hidden">
+        <div id="form-container" class="lg:col-span-5 w-full bg-white p-4 sm:p-5 md:p-6 rounded-2xl border border-zinc-200/80 shadow-sm h-fit no-print overflow-hidden">
             
             <!-- Header & Language Switcher -->
-            <div class="flex items-center justify-between border-b border-zinc-100 pb-3 mb-5">
-                <h2 data-i18n="titleForm" class="text-lg md:text-xl font-bold tracking-tight text-zinc-900">
-                    Captura de Reserva
-                </h2>
+            <div class="flex items-center justify-between border-b border-zinc-100 pb-3.5 mb-4 sm:mb-5 gap-2">
+                <div class="min-w-0">
+                    <h2 data-i18n="titleForm" class="text-base sm:text-lg md:text-xl font-bold tracking-tight text-zinc-900 truncate">
+                        Captura de Reserva
+                    </h2>
+                    <p data-i18n="subtitleForm" class="text-[11px] text-zinc-400 font-medium hidden sm:block">Ingrese los detalles para generar el voucher</p>
+                </div>
                 
-                <div class="inline-flex p-1 bg-zinc-100 rounded-lg border border-zinc-200/80">
-                    <button type="button" id="btn-lang-es" onclick="switchLanguage('es')" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all bg-white text-zinc-900 shadow-sm">
+                <div class="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200/80 flex-shrink-0">
+                    <button type="button" id="btn-lang-es" onclick="switchLanguage('es')" class="px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95">
                         🇲🇽 ES
                     </button>
-                    <button type="button" id="btn-lang-en" onclick="switchLanguage('en')" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all text-zinc-500 hover:text-zinc-900">
+                    <button type="button" id="btn-lang-en" onclick="switchLanguage('en')" class="px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95">
                         🇺🇸 EN
                     </button>
                 </div>
             </div>
             
             <!-- Reservation Form -->
-            <form id="reserveForm" class="space-y-4">
+            <form id="reserveForm" class="space-y-3.5 sm:space-y-4">
                 
                 <!-- Client Name -->
                 <div>
-                    <label data-i18n="lblCliente" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Nombre del Cliente</label>
-                    <input type="text" id="nombreCliente" required placeholder="Ej. Juan Pérez" class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                    <label data-i18n="lblCliente" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Nombre del Cliente</label>
+                    <input type="text" id="nombreCliente" required placeholder="Ej. Juan Pérez" class="w-full px-3.5 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
                 </div>
 
                 <!-- Hotel / Lodging -->
                 <div>
-                    <label data-i18n="lblHotel" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Hotel / Hospedaje</label>
-                    <input type="text" id="hotel" placeholder="Ej. Grand Oasis / Airbnb" class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                    <label data-i18n="lblHotel" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Hotel / Hospedaje</label>
+                    <input type="text" id="hotel" placeholder="Ej. Grand Oasis / Airbnb" class="w-full px-3.5 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
                 </div>
 
                 <!-- Activity Selection -->
                 <div>
-                    <label data-i18n="lblActividad" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Actividad / Embarcación</label>
-                    <select id="actividad" required class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                    <label data-i18n="lblActividad" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Actividad / Embarcación</label>
+                    <select id="actividad" required class="w-full px-3.5 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
                         <option value="">Cargando catálogo...</option>
                     </select>
-                    <input type="text" id="otraActividad" placeholder="Especificar actividad manualmente" class="hidden mt-2 w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                    <input type="text" id="otraActividad" placeholder="Especificar actividad manualmente" class="hidden mt-2 w-full px-3.5 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                 </div>
 
                 <!-- Dates Calendar Section -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
-                        <label data-i18n="lblFechaReserva" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Fecha de Reserva</label>
-                        <input type="date" id="fechaReserva" required class="w-full block px-3 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                        <label data-i18n="lblFechaReserva" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Fecha de Reserva</label>
+                        <input type="date" id="fechaReserva" required class="w-full block px-3 py-2 sm:py-2 border border-zinc-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                     </div>
                     <div>
-                        <label data-i18n="lblFechaServicio" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Fecha del Servicio</label>
-                        <input type="date" id="fecha" required class="w-full block px-3 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                        <label data-i18n="lblFechaServicio" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Fecha del Servicio</label>
+                        <input type="date" id="fecha" required class="w-full block px-3 py-2 sm:py-2 border border-zinc-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                     </div>
                 </div>
 
                 <!-- Passengers Count -->
                 <div class="grid grid-cols-2 gap-3 min-w-0">
                     <div>
-                        <label data-i18n="lblAdultos" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1 truncate">Adultos</label>
-                        <select id="adultos" required class="w-full px-2 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                        <label data-i18n="lblAdultos" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1 truncate">Adultos</label>
+                        <select id="adultos" required class="w-full px-2.5 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                         </select>
                     </div>
                     <div>
-                        <label data-i18n="lblMenores" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1 truncate">Menores (4-11)</label>
-                        <select id="menores" required class="w-full px-2 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                        <label data-i18n="lblMenores" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1 truncate">Menores (4-11)</label>
+                        <select id="menores" required class="w-full px-2.5 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                         </select>
                     </div>
                 </div>
 
                 <!-- Checkin & Location -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 min-w-0">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 min-w-0">
                     <div class="min-w-0">
-                        <label data-i18n="lblCheckin" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Check In</label>
-                        <select id="checkin" required class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                        <label data-i18n="lblCheckin" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Check In</label>
+                        <select id="checkin" required class="w-full px-3 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                         </select>
                     </div>
                     <div class="sm:col-span-2 min-w-0">
-                        <label data-i18n="lblCheckpoint" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Punto de Encuentro</label>
-                        <input type="text" id="checkpoint" required placeholder="Ej. Marina Imperial" class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all">
+                        <label data-i18n="lblCheckpoint" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Punto de Encuentro</label>
+                        <input type="text" id="checkpoint" required placeholder="Ej. Marina Imperial" class="w-full px-3.5 py-2.5 sm:py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                     </div>
                 </div>
 
                 <!-- Payment Breakdown (Deposit, Saldo, Currency) -->
-                <div class="p-3 bg-zinc-50 rounded-xl border border-zinc-200 space-y-3">
+                <div class="p-3.5 bg-zinc-50/90 rounded-xl border border-zinc-200/80 space-y-3">
                     <div class="flex items-center justify-between">
-                        <span data-i18n="lblDesglosePago" class="block text-xs font-semibold uppercase tracking-wider text-zinc-700">Desglose de Pago</span>
+                        <span data-i18n="lblDesglosePago" class="block text-xs font-bold uppercase tracking-wider text-zinc-700">Desglose de Pago</span>
                         <div class="flex items-center gap-1.5">
-                            <label data-i18n="lblDivisa" class="text-[10px] font-medium uppercase text-zinc-400">Divisa</label>
-                            <select id="divisa" class="px-2 py-1 border border-zinc-300 rounded-md text-xs bg-white font-semibold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-950">
+                            <label data-i18n="lblDivisa" class="text-[10px] font-bold uppercase text-zinc-400">Divisa</label>
+                            <select id="divisa" class="px-2 py-1 border border-zinc-300 rounded-lg text-xs bg-white font-bold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-950 shadow-2xs">
                                 <option value="MXN">MXN</option>
                                 <option value="USD">USD</option>
                             </select>
@@ -119,57 +161,57 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label data-i18n="lblDeposito" class="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">Depósito / Anticipo</label>
-                            <input type="number" id="deposito" min="0" step="any" placeholder="0.00" value="0" class="w-full px-3 py-1.5 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 bg-white">
+                            <label data-i18n="lblDeposito" class="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Depósito / Anticipo</label>
+                            <input type="number" id="deposito" min="0" step="any" placeholder="0.00" value="0" class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-zinc-950 bg-white shadow-2xs">
                         </div>
                         <div>
-                            <label data-i18n="lblSaldo" class="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">Saldo Pendiente</label>
-                            <input type="number" id="saldo" min="0" step="any" placeholder="0.00" value="0" class="w-full px-3 py-1.5 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 bg-white">
+                            <label data-i18n="lblSaldo" class="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Saldo Pendiente</label>
+                            <input type="number" id="saldo" min="0" step="any" placeholder="0.00" value="0" class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-zinc-950 bg-white shadow-2xs">
                         </div>
                     </div>
 
-                    <div class="pt-2 border-t border-zinc-200 flex justify-between items-center text-xs">
+                    <div class="pt-2 border-t border-zinc-200/80 flex justify-between items-center text-xs">
                         <span data-i18n="lblTotalBalance" class="font-medium text-zinc-600">Balance Total (Suma):</span>
-                        <span id="txt-balance-total" class="font-bold text-sm text-zinc-900">$0.00 MXN</span>
+                        <span id="txt-balance-total" class="font-extrabold text-sm text-zinc-900">$0.00 MXN</span>
                     </div>
                 </div>
 
                 <!-- Internal Currency Converter -->
-                <div class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
-                    <span data-i18n="lblConversor" class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Conversor de Divisas Interno</span>
+                <div class="p-3 bg-zinc-50/90 rounded-xl border border-zinc-200/80">
+                    <span data-i18n="lblConversor" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Conversor de Divisas Interno</span>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div>
-                            <label data-i18n="lblTC" class="block text-[10px] text-zinc-400 uppercase mb-0.5">T.C. Selección</label>
-                            <select id="tipoCambio" class="w-full p-1 border border-zinc-300 rounded bg-white focus:outline-none text-xs">
+                            <label data-i18n="lblTC" class="block text-[10px] text-zinc-400 uppercase font-semibold mb-0.5">T.C. Selección</label>
+                            <select id="tipoCambio" class="w-full p-1.5 border border-zinc-300 rounded-lg bg-white focus:outline-none text-xs font-medium">
                             </select>
                         </div>
                         <div>
-                            <label data-i18n="lblEquivalencia" class="block text-[10px] text-zinc-400 uppercase mb-0.5">Equivalencia Estimada</label>
-                            <div id="calculoConversion" class="font-medium pt-1 text-zinc-700 text-xs">---</div>
+                            <label data-i18n="lblEquivalencia" class="block text-[10px] text-zinc-400 uppercase font-semibold mb-0.5">Equivalencia Estimada</label>
+                            <div id="calculoConversion" class="font-semibold pt-1 text-zinc-800 text-xs truncate">---</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Operational Notes -->
                 <div>
-                    <label data-i18n="lblNotas" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Notas / Observaciones del Servicio</label>
-                    <textarea id="notas" rows="3" placeholder="Restricciones alimenticias, decoraciones, itinerarios especiales..." class="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all"></textarea>
+                    <label data-i18n="lblNotas" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Notas / Observaciones del Servicio</label>
+                    <textarea id="notas" rows="2" placeholder="Restricciones alimenticias, decoraciones, itinerarios especiales..." class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs"></textarea>
                 </div>
 
                 <!-- Confirmation Code -->
                 <div>
-                    <label data-i18n="lblConfirmacion" class="block text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Confirmación Automática</label>
-                    <input type="text" id="confirmacion" readonly class="w-full px-3 py-2 bg-zinc-100 border border-zinc-200 rounded-lg text-sm font-mono text-zinc-500 cursor-not-allowed">
+                    <label data-i18n="lblConfirmacion" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Confirmación Automática</label>
+                    <input type="text" id="confirmacion" readonly class="w-full px-3.5 py-2 bg-zinc-100/80 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-600 font-medium cursor-not-allowed">
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                    <button type="button" onclick="imprimirVoucher()" class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3 px-4 rounded-lg text-sm transition-colors shadow-sm order-1 sm:order-none flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                    <button type="button" onclick="imprimirVoucher()" class="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                         <span data-i18n="btnImprimir">Imprimir / PDF</span>
                     </button>
-                    <button type="button" onclick="exportarVoucherAImagen()" class="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border border-zinc-300 font-medium py-3 px-4 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <button type="button" onclick="exportarVoucherAImagen()" class="w-full bg-zinc-100 hover:bg-zinc-200 active:scale-[0.98] text-zinc-900 border border-zinc-300/80 font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         <span data-i18n="btnImagen">Imagen</span>
                     </button>
                 </div>
@@ -177,143 +219,150 @@
         </div>
 
         <!-- Voucher Card Preview -->
-        <div id="voucher-preview" class="lg:col-span-7 bg-white p-5 md:p-8 rounded-xl border border-zinc-200 shadow-sm print-card flex flex-col justify-between min-h-[600px] md:min-h-[680px] overflow-hidden">
+        <div id="voucher-preview" class="lg:col-span-7 bg-white p-4 sm:p-6 md:p-8 rounded-2xl border border-zinc-200/80 shadow-sm print-card flex flex-col justify-between min-h-[580px] md:min-h-[660px] overflow-hidden">
             <div>
                 <!-- Voucher Header -->
-                <div class="flex flex-row justify-between items-center border-b border-zinc-200 pb-4 mb-4 md:pb-5 md:mb-5 gap-2 pt-1">
-                    <div class="min-w-0 py-1">
-                        <h1 data-i18n="pvMainTitle" class="text-xl md:text-2xl font-extrabold tracking-tight text-zinc-950 uppercase leading-normal block">Voucher de Reserva</h1>
-                        <p data-i18n="pvSubTitle" class="text-[10px] font-semibold tracking-widest uppercase text-zinc-400 mt-0.5 leading-none">Confirmation Document</p>
+                <div class="flex flex-row justify-between items-center border-b border-zinc-200 pb-3.5 mb-4 md:pb-5 md:mb-5 gap-2 pt-0.5">
+                    <div class="min-w-0 pr-1">
+                        <h1 data-i18n="pvMainTitle" class="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-zinc-950 uppercase leading-snug">Voucher de Reserva</h1>
+                        <p data-i18n="pvSubTitle" class="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-0.5 leading-none">Confirmation Document</p>
                     </div>
                     <div class="flex-shrink-0 text-right">
-                        <span id="pv-confirmacion" class="inline-flex items-center justify-center bg-zinc-900 text-white font-mono text-[11px] md:text-xs font-semibold px-3 py-1.5 rounded whitespace-nowrap leading-none tracking-wide h-7">ACT-XXXXXX-X</span>
+                        <span id="pv-confirmacion" class="inline-flex items-center justify-center bg-zinc-900 text-white font-mono text-[10px] sm:text-[11px] md:text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-lg whitespace-nowrap leading-none tracking-wider shadow-2xs">ACT-XXXXXX-X</span>
                     </div>
                 </div>
 
                 <!-- Voucher Body Details -->
-                <div class="space-y-4 md:space-y-5">
+                <div class="space-y-3.5 sm:space-y-4 md:space-y-5">
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                         <div class="min-w-0">
-                            <p data-i18n="pvPasajero" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Pasajero Principal</p>
-                            <p id="pv-nombre" class="text-base font-semibold text-zinc-900 break-words">---</p>
+                            <p data-i18n="pvPasajero" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Pasajero Principal</p>
+                            <p id="pv-nombre" class="text-sm sm:text-base font-bold text-zinc-900 break-words">---</p>
                         </div>
                         <div class="min-w-0">
-                            <p data-i18n="pvHotelLabel" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Hotel / Hospedaje</p>
-                            <p id="pv-hotel" class="text-base font-semibold text-zinc-900 break-words">---</p>
+                            <p data-i18n="pvHotelLabel" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Hotel / Hospedaje</p>
+                            <p id="pv-hotel" class="text-sm sm:text-base font-bold text-zinc-900 break-words">---</p>
                         </div>
                     </div>
 
-                    <div class="min-w-0 pt-1">
-                        <p data-i18n="pvActividadContratada" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Actividad contratada</p>
-                        <p id="pv-actividad" class="text-base font-semibold text-zinc-900 break-words">---</p>
+                    <div class="min-w-0 pt-0.5">
+                        <p data-i18n="pvActividadContratada" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Actividad contratada</p>
+                        <p id="pv-actividad" class="text-sm sm:text-base font-bold text-zinc-900 break-words">---</p>
                         <p id="pv-descriptivo" class="text-xs text-zinc-500 italic mt-0.5 hidden break-words">---</p>
                     </div>
 
                     <!-- Technical specs card (optional catalog specs) -->
-                    <div id="pv-fichaTecnica" class="hidden p-3 bg-zinc-50 rounded-lg border border-zinc-100 text-xs space-y-2">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-zinc-200/60 pb-2">
+                    <div id="pv-fichaTecnica" class="hidden p-3 bg-zinc-50/90 rounded-xl border border-zinc-100 text-xs space-y-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 border-b border-zinc-200/60 pb-2">
                             <div id="wrap-pv-pies" class="hidden min-w-0">
-                                <span data-i18n="pvDimension" class="text-[10px] uppercase font-medium text-zinc-400 block">Dimensión</span>
-                                <span id="pv-pies" class="font-medium text-zinc-700 break-words">---</span>
+                                <span data-i18n="pvDimension" class="text-[9px] uppercase font-bold text-zinc-400 block">Dimensión</span>
+                                <span id="pv-pies" class="font-semibold text-zinc-700 break-words text-xs">---</span>
                             </div>
                             <div id="wrap-pv-capacidad" class="hidden min-w-0">
-                                <span data-i18n="pvCapacidad" class="text-[10px] uppercase font-medium text-zinc-400 block">Capacidad Máxima</span>
-                                <span id="pv-capacidad" class="font-medium text-zinc-700 break-words">---</span>
+                                <span data-i18n="pvCapacidad" class="text-[9px] uppercase font-bold text-zinc-400 block">Capacidad Máxima</span>
+                                <span id="pv-capacidad" class="font-semibold text-zinc-700 break-words text-xs">---</span>
                             </div>
                         </div>
                         <div id="wrap-pv-incluye" class="hidden min-w-0">
-                            <span data-i18n="pvIncluye" class="text-[10px] uppercase font-medium text-zinc-400 block mb-0.5">El servicio incluye</span>
+                            <span data-i18n="pvIncluye" class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">El servicio incluye</span>
                             <p id="pv-incluye" class="text-zinc-600 leading-relaxed text-[11px] break-words">---</p>
                         </div>
                     </div>
 
                     <!-- Dates & Pax grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-zinc-100 pt-3 md:pt-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 border-t border-zinc-100 pt-3 md:pt-4">
                         <div class="min-w-0">
-                            <p data-i18n="pvFechaReservaLbl" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Fecha de Reserva</p>
-                            <p id="pv-fecha-reserva" class="text-sm font-medium text-zinc-900">---</p>
+                            <p data-i18n="pvFechaReservaLbl" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Fecha de Reserva</p>
+                            <p id="pv-fecha-reserva" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
                         </div>
                         <div class="min-w-0">
-                            <p data-i18n="pvFechaServicioLbl" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Fecha del Servicio</p>
-                            <p id="pv-fecha" class="text-sm font-medium text-zinc-900">---</p>
+                            <p data-i18n="pvFechaServicioLbl" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Fecha del Servicio</p>
+                            <p id="pv-fecha" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
                         </div>
                         <div class="min-w-0">
-                            <p data-i18n="pvDistribucion" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Pasajeros</p>
-                            <p id="pv-personas" class="text-sm font-medium text-zinc-900">---</p>
+                            <p data-i18n="pvDistribucion" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Pasajeros</p>
+                            <p id="pv-personas" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
                         </div>
                     </div>
 
                     <!-- Checkin & Meeting Point grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-zinc-100 pb-3 md:pb-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 border-b border-zinc-100 pb-3 md:pb-4">
                         <div class="min-w-0">
-                            <p data-i18n="pvHorario" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Horario Check-in</p>
-                            <p id="pv-checkin" class="text-sm font-medium text-zinc-900">---</p>
+                            <p data-i18n="pvHorario" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Horario Check-in</p>
+                            <p id="pv-checkin" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
                         </div>
                         <div class="min-w-0">
-                            <p data-i18n="pvPuntoEncuentro" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400 mb-0.5">Punto de Encuentro</p>
-                            <p id="pv-checkpoint" class="text-sm font-medium text-zinc-900 break-words">---</p>
+                            <p data-i18n="pvPuntoEncuentro" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Punto de Encuentro</p>
+                            <p id="pv-checkpoint" class="text-xs sm:text-sm font-semibold text-zinc-900 break-words">---</p>
                         </div>
                     </div>
 
-                    <!-- Payment Details Card -->
-                    <div class="bg-zinc-900 text-white p-4 rounded-xl shadow-sm space-y-3">
-                        <div class="grid grid-cols-3 gap-2 border-b border-zinc-800 pb-2 text-center sm:text-left">
-                            <div>
-                                <p data-i18n="pvDepositoLbl" class="text-[9px] font-medium uppercase tracking-wider text-zinc-400">Depósito Pagado</p>
-                                <p id="pv-deposito" class="text-xs sm:text-sm font-bold text-emerald-400">---</p>
+                    <!-- Payment Details Card (Fluid for mobile) -->
+                    <div class="bg-zinc-900 text-white p-3.5 sm:p-4 rounded-xl shadow-xs space-y-3">
+                        <div class="grid grid-cols-3 gap-1.5 sm:gap-2 border-b border-zinc-800 pb-2.5 text-center sm:text-left min-w-0">
+                            <div class="min-w-0">
+                                <p data-i18n="pvDepositoLbl" class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">Depósito Pagado</p>
+                                <p id="pv-deposito" class="text-xs sm:text-sm font-extrabold text-emerald-400 truncate">---</p>
                             </div>
-                            <div>
-                                <p data-i18n="pvSaldoLbl" class="text-[9px] font-medium uppercase tracking-wider text-zinc-400">Saldo Pendiente</p>
-                                <p id="pv-saldo" class="text-xs sm:text-sm font-bold text-amber-400">---</p>
+                            <div class="min-w-0">
+                                <p data-i18n="pvSaldoLbl" class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">Saldo Pendiente</p>
+                                <p id="pv-saldo" class="text-xs sm:text-sm font-extrabold text-amber-400 truncate">---</p>
                             </div>
-                            <div class="text-right">
-                                <p data-i18n="pvTotalLbl" class="text-[9px] font-medium uppercase tracking-wider text-zinc-400">Total Reserva</p>
-                                <p id="pv-total" class="text-xs sm:text-sm font-bold text-white">---</p>
+                            <div class="text-right min-w-0">
+                                <p data-i18n="pvTotalLbl" class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">Total Reserva</p>
+                                <p id="pv-total" class="text-xs sm:text-sm font-extrabold text-white truncate">---</p>
                             </div>
                         </div>
 
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-0.5">
-                            <div>
-                                <p data-i18n="pvBalancePagar" class="text-[10px] font-medium uppercase tracking-wider text-zinc-400">Monto Restante a Cobrar</p>
-                                <p id="pv-balance" class="text-base md:text-lg font-extrabold tracking-tight text-white break-all">---</p>
+                            <div class="min-w-0">
+                                <p data-i18n="pvBalancePagar" class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Monto Restante a Cobrar</p>
+                                <p id="pv-balance" class="text-sm sm:text-base md:text-lg font-black tracking-tight text-white break-all">---</p>
                             </div>
-                            <div class="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-zinc-800 sm:border-zinc-700 pt-1.5 sm:pt-0 sm:pl-4">
-                                <p data-i18n="pvConversionRef" class="text-[9px] font-medium uppercase tracking-wider text-zinc-400">Conversión Ref.</p>
+                            <div class="w-full sm:w-auto text-left sm:text-right border-t sm:border-t-0 sm:border-l border-zinc-800 sm:border-zinc-700 pt-1.5 sm:pt-0 sm:pl-4 min-w-0">
+                                <p data-i18n="pvConversionRef" class="text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider text-zinc-400">Conversión Ref.</p>
                                 <p id="pv-conversion" class="text-xs font-mono text-zinc-300 break-all">---</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Notes preview -->
-                    <div id="wrap-pv-notas" class="hidden bg-amber-50/60 border border-amber-200/80 p-3 rounded-lg min-w-0">
-                        <p data-i18n="pvNotasObs" class="text-[10px] font-medium uppercase tracking-wider text-amber-800 mb-0.5">Notas / Observaciones</p>
-                        <p id="pv-notas" class="text-xs text-zinc-700 italic whitespace-pre-line break-words"></p>
+                    <div id="wrap-pv-notas" class="hidden bg-amber-50/70 border border-amber-200/80 p-3 rounded-xl min-w-0">
+                        <p data-i18n="pvNotasObs" class="text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-0.5">Notas / Observaciones</p>
+                        <p id="pv-notas" class="text-xs text-zinc-800 italic whitespace-pre-line break-words"></p>
                     </div>
                 </div>
             </div>
 
             <!-- Footer & QR Code -->
-            <div class="mt-6 md:mt-8 border-t border-zinc-100 pt-4 md:pt-5 flex flex-col sm:flex-row justify-between items-center gap-4 pb-1">
+            <div class="mt-6 md:mt-8 border-t border-zinc-100 pt-3.5 md:pt-5 flex flex-col sm:flex-row justify-between items-center gap-3.5 pb-1">
                 <div class="text-center sm:text-left text-[10px] text-zinc-400 w-full sm:max-w-[65%]">
-                    <p data-i18n="footerCompany" class="font-semibold text-zinc-700 mb-0.5">Servicios Turísticos y Náuticos</p>
+                    <p data-i18n="footerCompany" class="font-bold text-zinc-700 mb-0.5">Servicios Turísticos y Náuticos</p>
                     <div class="mt-1 mb-1.5">
                         <p data-i18n="footerPoliciesTitle" class="font-semibold text-zinc-700 text-[9px] uppercase tracking-wider">Políticas y restricciones:</p>
                         <p data-i18n="footerPoliciesText" class="font-bold text-zinc-900 text-[10px]">Depósito no reembolsable, cancelación mínima 12 hrs. antes.</p>
                     </div>
                     <p data-i18n="footerLocation">Cancún, Quintana Roo, México.</p>
-                    <p data-i18n="footerDisclaimer" class="mt-1.5 text-[9px] text-zinc-400 italic leading-tight">Voucher válido con validación QR activa en muelles o punto de registro.</p>
+                    <p data-i18n="footerDisclaimer" class="mt-1 text-[9px] text-zinc-400 italic leading-tight">Voucher válido con validación QR activa en muelles o punto de registro.</p>
                 </div>
                 <div class="text-center flex flex-col items-center flex-shrink-0">
-                    <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=Voucher" alt="QR" class="w-[90px] h-[90px] border border-zinc-200 p-1 rounded bg-white shadow-xs">
-                    <span data-i18n="pvValidarReserva" class="text-[8px] font-mono text-zinc-400 mt-1 uppercase tracking-wider">Validar Reserva</span>
+                    <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=Voucher" alt="QR" class="w-[85px] h-[85px] sm:w-[90px] sm:h-[90px] border border-zinc-200 p-1 rounded-lg bg-white shadow-2xs">
+                    <span data-i18n="pvValidarReserva" class="text-[8px] font-mono font-semibold text-zinc-400 mt-1 uppercase tracking-wider">Validar Reserva</span>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Mobile Quick Scroll Action Floating Button -->
+    <div class="fixed bottom-4 right-4 z-40 lg:hidden no-print">
+        <a href="#voucher-preview" class="flex items-center gap-2 bg-zinc-900/90 backdrop-blur-md text-white text-xs font-semibold px-3.5 py-2.5 rounded-full shadow-lg border border-zinc-700 active:scale-95 transition-all">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            <span data-i18n="btnMobilePreview">Ver Voucher</span>
+        </a>
+    </div>
+
     <script>
         const TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQj_RvDFfQbBWzbacXHBqF7j1v077vrgEpcnVPqvjBtaqf3CQ61PHscU1uPLBOTBrfOyr4_AT_V0xjr/pub?output=tsv';
 
@@ -324,6 +373,7 @@
         const dictionary = {
             es: {
                 titleForm: "Captura de Reserva",
+                subtitleForm: "Ingrese los detalles para generar el voucher",
                 lblCliente: "Nombre del Cliente",
                 lblHotel: "Hotel / Hospedaje",
                 lblActividad: "Actividad / Embarcación",
@@ -345,6 +395,7 @@
                 lblConfirmacion: "Confirmación Automática",
                 btnImprimir: "Imprimir / PDF",
                 btnImagen: "Imagen",
+                btnMobilePreview: "Ver Voucher",
 
                 // Voucher labels
                 pvMainTitle: "Voucher de Reserva",
@@ -380,10 +431,11 @@
                 optChildren: "Menores",
                 optOther: "Otros (Especificar)",
                 optManual: "Especificar Actividad",
-                msgCopiado: "¡Imagen del voucher copiada al portapapeles! Pégala (Ctrl+V) en el chat de WhatsApp."
+                msgCopiado: "¡Imagen copiada al portapapeles! Pégala (Ctrl+V) en el chat de WhatsApp."
             },
             en: {
                 titleForm: "Reservation Capture",
+                subtitleForm: "Enter booking details to generate voucher",
                 lblCliente: "Client Name",
                 lblHotel: "Hotel / Accommodation",
                 lblActividad: "Activity / Boat Vessel",
@@ -405,6 +457,7 @@
                 lblConfirmacion: "Confirmation Code",
                 btnImprimir: "Print / PDF",
                 btnImagen: "Save Image",
+                btnMobilePreview: "View Voucher",
 
                 // Voucher labels
                 pvMainTitle: "Booking Voucher",
@@ -440,28 +493,26 @@
                 optChildren: "Children",
                 optOther: "Other (Specify)",
                 optManual: "Specify Activity",
-                msgCopiado: "Voucher image copied to clipboard! Paste (Ctrl+V) in the WhatsApp chat."
+                msgCopiado: "Image copied to clipboard! Paste (Ctrl+V) in the WhatsApp chat."
             }
         };
 
         function switchLanguage(lang) {
             currentLang = lang;
             
-            // Toggle active styling on buttons
             const btnEs = document.getElementById('btn-lang-es');
             const btnEn = document.getElementById('btn-lang-en');
 
             if (lang === 'es') {
-                btnEs.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all bg-white text-zinc-900 shadow-sm";
-                btnEn.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all text-zinc-500 hover:text-zinc-900";
+                btnEs.className = "px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95";
+                btnEn.className = "px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95";
                 document.documentElement.lang = "es";
             } else {
-                btnEn.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all bg-white text-zinc-900 shadow-sm";
-                btnEs.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all text-zinc-500 hover:text-zinc-900";
+                btnEn.className = "px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95";
+                btnEs.className = "px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95";
                 document.documentElement.lang = "en";
             }
 
-            // Update text for all elements with data-i18n
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (dictionary[lang] && dictionary[lang][key]) {
@@ -469,7 +520,6 @@
                 }
             });
 
-            // Refresh dynamic selects and sync voucher
             updateSelectOptionsLabels();
             syncPreview();
         }
@@ -499,7 +549,6 @@
             }
             if(currentMenorVal) mSel.value = currentMenorVal;
 
-            // Update 'Otros' option label in Activity select if present
             const actSel = document.getElementById('actividad');
             const lastOpt = actSel.options[actSel.options.length - 1];
             if (lastOpt && lastOpt.value === "Otros") {
@@ -532,12 +581,10 @@
         }
 
         function initFormOptions() {
-            // Default dates
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fechaReserva').value = today;
             document.getElementById('fecha').value = today;
 
-            // Populate Checkin Hours
             const cSel = document.getElementById('checkin');
             for (let h = 0; h < 24; h++) {
                 for (let m = 0; m < 60; m += 30) {
@@ -549,7 +596,6 @@
                 }
             }
 
-            // Exchange rates
             const tcSel = document.getElementById('tipoCambio');
             for (let v = 15; v <= 23; v += 0.5) {
                 let opt = document.createElement('option');
@@ -630,7 +676,6 @@
             const checkin = document.getElementById('checkin').value;
             const checkpoint = document.getElementById('checkpoint').value || '---';
             
-            // Deposit, Saldo and Total Balance math
             const deposito = parseFloat(document.getElementById('deposito').value) || 0;
             const saldo = parseFloat(document.getElementById('saldo').value) || 0;
             const totalBalance = deposito + saldo;
@@ -639,10 +684,8 @@
             const tc = parseFloat(document.getElementById('tipoCambio').value) || 20;
             const notasTxt = document.getElementById('notas').value || '';
 
-            // Update Total Balance sum label in form
             document.getElementById('txt-balance-total').textContent = `$${totalBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}`;
 
-            // Handle manual activity input toggle
             if (actSel === "Otros") {
                 document.getElementById('otraActividad').classList.remove('hidden');
             } else {
@@ -651,7 +694,6 @@
             const actividadFinal = (actSel === "Otros") ? (otraAct || '---') : (actSel || '---');
             document.getElementById('pv-actividad').textContent = actividadFinal;
 
-            // Ficha técnica (optional catalog specs)
             const meta = window.catalogoActividades[actSel];
             const pvDesc = document.getElementById('pv-descriptivo');
             const pvFicha = document.getElementById('pv-fichaTecnica');
@@ -689,7 +731,6 @@
                 pvFicha.classList.add('hidden');
             }
 
-            // Currency conversion estimates
             let txtEquiv = "---";
             let txtPrevConv = "---";
             if (saldo > 0) {
@@ -706,7 +747,6 @@
             document.getElementById('calculoConversion').textContent = txtEquiv;
             document.getElementById('pv-conversion').textContent = txtPrevConv;
 
-            // Notes
             const wPvNotas = document.getElementById('wrap-pv-notas');
             if (notasTxt.trim() !== "") {
                 document.getElementById('pv-notas').textContent = notasTxt;
@@ -715,7 +755,6 @@
                 wPvNotas.classList.add('hidden');
             }
 
-            // Generate booking code
             let codigo = "ACT-XXXXXX-" + totalPax;
             if (fechaServicio !== '---') {
                 const p = fechaServicio.split('-');
@@ -723,13 +762,11 @@
             }
             document.getElementById('confirmacion').value = codigo;
 
-            // Update main fields on Voucher Preview
             document.getElementById('pv-nombre').textContent = cliente;
             document.getElementById('pv-hotel').textContent = hotel;
             document.getElementById('pv-fecha-reserva').textContent = formatarFecha(fechaReserva, currentLang);
             document.getElementById('pv-fecha').textContent = formatarFecha(fechaServicio, currentLang);
             
-            // Guest distribution label
             let txtDistribucion = `${adultos} ${(adultos === 1 ? dictionary[currentLang].optAdult : dictionary[currentLang].optAdults)}`;
             if (menores > 0) {
                 txtDistribucion += ` / ${menores} ${(menores === 1 ? dictionary[currentLang].optChild : dictionary[currentLang].optChildren)}`;
@@ -739,7 +776,6 @@
             document.getElementById('pv-checkin').textContent = `${checkin} hrs`;
             document.getElementById('pv-checkpoint').textContent = checkpoint;
 
-            // Payment display on Voucher
             document.getElementById('pv-deposito').textContent = `$${deposito.toLocaleString()} ${divisa}`;
             document.getElementById('pv-saldo').textContent = `$${saldo.toLocaleString()} ${divisa}`;
             document.getElementById('pv-total').textContent = `$${totalBalance.toLocaleString()} ${divisa}`;
@@ -750,28 +786,110 @@
             actualizarQR(cliente, hotel, actSel, otraAct, fechaReserva, fechaServicio, adultos, menores, checkin, checkpoint, deposito, saldo, divisa, tc, notasTxt);
         }
 
-        function actualizarQR(n, h, a, oa, fr, f, ad, mn, ci, cp, dep, sal, d, tc, no) {
+        function obtenerUrlVoucher() {
+            const cliente = document.getElementById('nombreCliente').value;
+            const hotel = document.getElementById('hotel').value;
+            const actSel = document.getElementById('actividad').value;
+            const otraAct = document.getElementById('otraActividad').value;
+            const fechaReserva = document.getElementById('fechaReserva').value;
+            const fechaServicio = document.getElementById('fecha').value;
+            const adultos = document.getElementById('adultos').value;
+            const menores = document.getElementById('menores').value;
+            const checkin = document.getElementById('checkin').value;
+            const checkpoint = document.getElementById('checkpoint').value;
+            const deposito = document.getElementById('deposito').value;
+            const saldo = document.getElementById('saldo').value;
+            const divisa = document.getElementById('divisa').value;
+            const tc = document.getElementById('tipoCambio').value;
+            const notasTxt = document.getElementById('notas').value;
+
             const baseUrl = window.location.origin + window.location.pathname;
             const q = new URLSearchParams();
-            if(n && n!=='---') q.append('n', n);
-            if(h && h!=='---') q.append('h', h);
-            if(a) q.append('a', a);
-            if(a==='Otros' && oa) q.append('oa', oa);
-            if(fr && fr!='---') q.append('fr', fr);
-            if(f && f!='---') q.append('f', f);
-            if(ad) q.append('ad', ad);
-            if(mn) q.append('mn', mn);
-            if(ci) q.append('ci', ci);
-            if(cp && cp!=='---') q.append('cp', cp);
-            if(dep) q.append('dep', dep);
-            if(sal) q.append('sal', sal);
-            if(d) q.append('d', d);
+            if(cliente && cliente!=='---') q.append('n', cliente);
+            if(hotel && hotel!=='---') q.append('h', hotel);
+            if(actSel) q.append('a', actSel);
+            if(actSel==='Otros' && otraAct) q.append('oa', otraAct);
+            if(fechaReserva && fechaReserva!='---') q.append('fr', fechaReserva);
+            if(fechaServicio && fechaServicio!='---') q.append('f', fechaServicio);
+            if(adultos) q.append('ad', adultos);
+            if(menores) q.append('mn', menores);
+            if(checkin) q.append('ci', checkin);
+            if(checkpoint && checkpoint!=='---') q.append('cp', checkpoint);
+            if(deposito) q.append('dep', deposito);
+            if(saldo) q.append('sal', saldo);
+            if(divisa) q.append('d', divisa);
             if(tc) q.append('tc', tc);
-            if(no && no.trim() !== '') q.append('no', no);
+            if(notasTxt && notasTxt.trim() !== '') q.append('no', notasTxt);
             q.append('lang', currentLang);
             q.append('view', 'voucher');
 
-            const finalUrl = `${baseUrl}?${q.toString()}`;
+            return `${baseUrl}?${q.toString()}`;
+        }
+
+        function generarResumenWhatsApp() {
+            const codigo = document.getElementById('confirmacion').value || 'Voucher';
+            const cliente = document.getElementById('pv-nombre').textContent;
+            const hotel = document.getElementById('pv-hotel').textContent;
+            const actividad = document.getElementById('pv-actividad').textContent;
+            const fechaServicio = document.getElementById('pv-fecha').textContent;
+            const personas = document.getElementById('pv-personas').textContent;
+            const checkin = document.getElementById('pv-checkin').textContent;
+            const checkpoint = document.getElementById('pv-checkpoint').textContent;
+            const deposito = document.getElementById('pv-deposito').textContent;
+            const saldo = document.getElementById('pv-saldo').textContent;
+            const total = document.getElementById('pv-total').textContent;
+            const notas = document.getElementById('notas').value.trim();
+            const urlVoucher = obtenerUrlVoucher();
+
+            if (currentLang === 'en') {
+                let msg = `📄 *BOOKING CONFIRMATION*\n`;
+                msg += `*Code:* ${codigo}\n`;
+                msg += `----------------------------------\n`;
+                msg += `👤 *Primary Guest:* ${cliente}\n`;
+                msg += `🏨 *Hotel / Lodging:* ${hotel}\n`;
+                msg += `⛵ *Activity:* ${actividad}\n`;
+                msg += `📅 *Service Date:* ${fechaServicio}\n`;
+                msg += `👥 *Guests:* ${personas}\n`;
+                msg += `⏰ *Check-in Time:* ${checkin}\n`;
+                msg += `📍 *Meeting Point:* ${checkpoint}\n`;
+                msg += `----------------------------------\n`;
+                msg += `💰 *Deposit Paid:* ${deposito}\n`;
+                msg += `💵 *Balance Due:* ${saldo}\n`;
+                msg += `💳 *Total Price:* ${total}\n`;
+                if (notas) {
+                    msg += `----------------------------------\n`;
+                    msg += `📝 *Notes:* ${notas}\n`;
+                }
+                msg += `----------------------------------\n`;
+                msg += `🔗 *View Voucher Online:* \n${urlVoucher}`;
+                return msg;
+            } else {
+                let msg = `📄 *CONFIRMACIÓN DE RESERVA*\n`;
+                msg += `*Código:* ${codigo}\n`;
+                msg += `----------------------------------\n`;
+                msg += `👤 *Cliente:* ${cliente}\n`;
+                msg += `🏨 *Hotel / Hospedaje:* ${hotel}\n`;
+                msg += `⛵ *Actividad:* ${actividad}\n`;
+                msg += `📅 *Fecha del Servicio:* ${fechaServicio}\n`;
+                msg += `👥 *Pasajeros:* ${personas}\n`;
+                msg += `⏰ *Horario Check-in:* ${checkin}\n`;
+                msg += `📍 *Punto de Encuentro:* ${checkpoint}\n`;
+                msg += `----------------------------------\n`;
+                msg += `💰 *Depósito Pagado:* ${deposito}\n`;
+                msg += `💵 *Saldo Pendiente:* ${saldo}\n`;
+                msg += `💳 *Total Reserva:* ${total}\n`;
+                if (notas) {
+                    msg += `----------------------------------\n`;
+                    msg += `📝 *Notas:* ${notas}\n`;
+                }
+                msg += `----------------------------------\n`;
+                msg += `🔗 *Ver Voucher en línea:* \n${urlVoucher}`;
+                return msg;
+            }
+        }
+
+        function actualizarQR(n, h, a, oa, fr, f, ad, mn, ci, cp, dep, sal, d, tc, no) {
+            const finalUrl = obtenerUrlVoucher();
             document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(finalUrl)}`;
         }
 
@@ -789,7 +907,6 @@
             if (q.has('ci')) document.getElementById('checkin').value = q.get('ci');
             if (q.has('cp')) document.getElementById('checkpoint').value = q.get('cp');
             
-            // Legacy balance compatibility or deposit/saldo fields
             if (q.has('dep')) document.getElementById('deposito').value = q.get('dep');
             if (q.has('sal')) document.getElementById('saldo').value = q.get('sal');
             if (!q.has('sal') && q.has('b')) document.getElementById('saldo').value = q.get('b');
@@ -810,7 +927,6 @@
 
             syncPreview();
 
-            // Direct voucher view mode (hides form when scanned via QR)
             if (q.get('view') === 'voucher') {
                 const formCol = document.getElementById('form-container');
                 const voucherCol = document.getElementById('voucher-preview');
@@ -818,7 +934,7 @@
                 if (formCol) formCol.remove();
                 if (voucherCol) {
                     voucherCol.classList.remove('lg:col-span-7');
-                    voucherCol.classList.add('lg:col-span-12', 'max-w-2xl', 'mx-auto', 'my-4');
+                    voucherCol.classList.add('lg:col-span-12', 'max-w-2xl', 'mx-auto', 'my-2');
                 }
             }
         }
@@ -828,7 +944,7 @@
             if (!toast) {
                 toast = document.createElement('div');
                 toast.id = 'custom-toast';
-                toast.className = 'fixed bottom-5 right-5 bg-zinc-900 text-white text-xs px-4 py-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none max-w-sm border border-zinc-700';
+                toast.className = 'fixed bottom-5 right-5 bg-zinc-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none max-w-xs border border-zinc-700';
                 document.body.appendChild(toast);
             }
             toast.textContent = mensaje;
@@ -841,17 +957,18 @@
         async function compartirOEnviarImagenWhatsApp(canvas) {
             const telefono = "5219981153503";
             const codigo = document.getElementById('confirmacion').value || 'Voucher';
+            const textoMensaje = generarResumenWhatsApp();
             
             canvas.toBlob(async (blob) => {
                 if (!blob) return;
                 const file = new File([blob], `${codigo}.png`, { type: 'image/png' });
 
-                // 1. Envío nativo de imagen (Teléfonos / Tablets con Web Share API)
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             files: [file],
-                            title: `Voucher ${codigo}`
+                            title: `Voucher ${codigo}`,
+                            text: textoMensaje
                         });
                         return;
                     } catch (err) {
@@ -859,7 +976,6 @@
                     }
                 }
 
-                // 2. Copiar imagen al portapapeles si está en PC/Laptop
                 let copiado = false;
                 try {
                     if (navigator.clipboard && window.ClipboardItem) {
@@ -875,8 +991,7 @@
                     mostrarToast(dictionary[currentLang].msgCopiado || "¡Imagen copiada! Pégala (Ctrl+V) en el chat de WhatsApp.");
                 }
 
-                // Abrir chat directo con +52 1 998 115 3503 sin texto
-                const waUrl = `https://api.whatsapp.com/send?phone=${telefono}`;
+                const waUrl = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(textoMensaje)}`;
                 window.open(waUrl, '_blank');
             }, 'image/png');
         }
@@ -885,7 +1000,7 @@
             window.print();
             setTimeout(() => {
                 const target = document.getElementById('voucher-preview');
-                html2canvas(target, { useCORS: true, scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+                html2canvas(target, { useCORS: true, scale: 2.5, backgroundColor: '#ffffff' }).then(canvas => {
                     compartirOEnviarImagenWhatsApp(canvas);
                 });
             }, 600);
@@ -898,13 +1013,14 @@
             const posicionScrollOriginal = window.scrollY;
             window.scrollTo(0, 0);
 
+            // Enhanced canvas options for mobile screens
             const opciones = {
                 useCORS: true, 
-                scale: 2, 
+                scale: 2.5, 
                 backgroundColor: '#ffffff',
                 scrollX: 0,
                 scrollY: 0,
-                windowWidth: document.documentElement.offsetWidth,
+                windowWidth: Math.max(document.documentElement.offsetWidth, 768),
                 windowHeight: document.documentElement.offsetHeight
             };
 
@@ -934,7 +1050,6 @@
         document.getElementById('divisa').addEventListener('change', syncPreview);
         document.getElementById('tipoCambio').addEventListener('change', syncPreview);
 
-        // Initialize application
         initFormOptions();
         fetchActivities();
     </script>
