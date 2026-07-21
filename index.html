@@ -394,6 +394,15 @@
     </div>
 
     <script>
+        // Forzar desplazamiento al inicio al cargar o refrescar la página
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+        window.addEventListener('beforeunload', () => {
+            window.scrollTo(0, 0);
+        });
+
         const TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQj_RvDFfQbBWzbacXHBqF7j1v077vrgEpcnVPqvjBtaqf3CQ61PHscU1uPLBOTBrfOyr4_AT_V0xjr/pub?output=tsv';
 
         window.catalogoActividades = {};
@@ -1082,6 +1091,7 @@
 
         initFormOptions();
         fetchActivities();
+        window.scrollTo(0, 0);
     </script>
 </body>
 </html>
