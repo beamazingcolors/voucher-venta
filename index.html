@@ -66,14 +66,15 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 4mm 6mm;
+                margin: 4mm 5mm;
             }
             html, body { 
                 background: white !important; 
                 color: #09090b !important; 
                 padding: 0 !important; 
                 margin: 0 !important;
-                height: auto !important;
+                height: 100% !important;
+                overflow: hidden !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -84,7 +85,7 @@
                 border: 1px solid #d4d4d8 !important; 
                 box-shadow: none !important; 
                 margin: 0 auto !important; 
-                padding: 1.25rem 1.5rem !important; 
+                padding: 1rem 1.25rem !important; 
                 width: 100% !important; 
                 max-width: 100% !important; 
                 box-sizing: border-box !important;
@@ -93,8 +94,8 @@
                 page-break-before: avoid !important;
                 page-break-after: avoid !important;
                 height: auto !important;
-                min-height: auto !important;
-                border-radius: 1rem !important;
+                max-height: 98vh !important;
+                border-radius: 0.75rem !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -159,7 +160,7 @@
                     <div>
                         <label data-i18n="lblFechaReserva" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Fecha de Reserva (Hoy)</label>
                         <div class="relative flex items-center">
-                            <input type="date" id="fechaReserva" readonly class="w-full px-3.5 py-2 pr-10 border border-zinc-200 rounded-xl text-sm bg-zinc-100 text-zinc-600 font-medium cursor-not-allowed shadow-2xs focus:outline-none">
+                            <input type="date" id="fechaReserva" readonly tabindex="-1" class="w-full px-3.5 py-2 pr-10 border border-zinc-200 rounded-xl text-sm bg-zinc-100 text-zinc-600 font-medium cursor-not-allowed shadow-2xs focus:outline-none pointer-events-none">
                             <div class="absolute right-3 pointer-events-none text-zinc-400">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             </div>
@@ -313,7 +314,6 @@
                     <div class="min-w-0 pt-0.5 px-1">
                         <p data-i18n="pvActividadContratada" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">Actividad contratada</p>
                         <p id="pv-actividad" class="text-base sm:text-lg font-black text-zinc-950 break-words">---</p>
-                        <p id="pv-descriptivo" class="text-xs text-zinc-600 italic mt-1 leading-relaxed hidden break-words">---</p>
                     </div>
 
                     <!-- Technical specs card -->
@@ -418,10 +418,29 @@
     </div>
 
     <script>
+        // Force browser to always scroll to top on open, refresh, or back/forward navigation
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
-        window.scrollTo(0, 0);
+
+        function resetScrollToTop() {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+
+        resetScrollToTop();
+
+        window.addEventListener('beforeunload', resetScrollToTop);
+        window.addEventListener('unload', resetScrollToTop);
+        window.addEventListener('pageshow', resetScrollToTop);
+        window.addEventListener('load', resetScrollToTop);
+        document.addEventListener('DOMContentLoaded', resetScrollToTop);
+
+        // Remove any URL hash on initial load to prevent automatic anchor scrolling
+        if (window.location.hash) {
+            history.replaceState(null, null, window.location.pathname + window.location.search);
+        }
 
         // Updated TSV Spreadsheet URL
         const TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXjqliiJ7JPnaYv8POjcyZnCKa0TX8qklWLwz2vYrISQOLBjxMyOVl0LQ3gHCvHIs-BHvJox-ADxvP/pub?output=tsv';
@@ -792,18 +811,12 @@
             document.getElementById('pv-actividad').textContent = actividadFinal;
 
             const meta = window.catalogoActividades[actSel];
-            const pvDesc = document.getElementById('pv-descriptivo');
             const pvFicha = document.getElementById('pv-fichaTecnica');
             const wPies = document.getElementById('wrap-pv-pies');
             const wCap = document.getElementById('wrap-pv-capacidad');
             const wInc = document.getElementById('wrap-pv-incluye');
 
             if (meta && actSel !== "Otros") {
-                if (meta.descriptivo) {
-                    pvDesc.textContent = meta.descriptivo;
-                    pvDesc.classList.remove('hidden');
-                } else { pvDesc.classList.add('hidden'); }
-
                 let tieneFicha = false;
                 
                 if (meta.pies) {
@@ -824,7 +837,6 @@
                 if (tieneFicha) { pvFicha.classList.remove('hidden'); } else { pvFicha.classList.add('hidden'); }
 
             } else {
-                pvDesc.classList.add('hidden');
                 pvFicha.classList.add('hidden');
             }
 
@@ -1192,7 +1204,7 @@
         // Run initializers
         initFormOptions();
         fetchActivities();
-        window.scrollTo(0, 0);
+        resetScrollToTop();
     </script>
 </body>
 </html>
