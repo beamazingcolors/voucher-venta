@@ -25,7 +25,7 @@
         /* Mobile Input Zoom Prevention (iOS Fix) */
         @media (max-width: 639px) {
             input, select, textarea {
-                font-size: 16px !important; /* Prevents auto-zoom on iOS focus */
+                font-size: 16px !important;
             }
         }
 
@@ -62,32 +62,41 @@
             z-index: 2;
         }
 
-        /* High definition single-page print styles */
+        /* High definition single-page print rules */
         @media print {
             @page {
-                size: portrait;
-                margin: 8mm;
+                size: A4 portrait;
+                margin: 4mm 6mm;
             }
-            body { 
+            html, body { 
                 background: white !important; 
-                color: black !important; 
+                color: #09090b !important; 
                 padding: 0 !important; 
                 margin: 0 !important;
+                height: auto !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .no-print { 
                 display: none !important; 
             }
             #voucher-preview { 
-                border: 1px solid #e4e4e7 !important; 
+                border: 1px solid #d4d4d8 !important; 
                 box-shadow: none !important; 
                 margin: 0 auto !important; 
-                padding: 1.25rem !important; 
+                padding: 1.25rem 1.5rem !important; 
                 width: 100% !important; 
                 max-width: 100% !important; 
+                box-sizing: border-box !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+                page-break-before: avoid !important;
+                page-break-after: avoid !important;
                 height: auto !important;
                 min-height: auto !important;
+                border-radius: 1rem !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
     </style>
@@ -99,7 +108,6 @@
         <!-- Form Section -->
         <div id="form-container" class="lg:col-span-5 w-full bg-white p-4 sm:p-5 md:p-6 rounded-2xl border border-zinc-200/90 shadow-sm h-fit no-print overflow-hidden">
             
-            <!-- Header & Language Switcher -->
             <div class="flex items-center justify-between border-b border-zinc-100 pb-3.5 mb-4 gap-2">
                 <div class="min-w-0">
                     <h2 data-i18n="titleForm" class="text-base sm:text-lg md:text-xl font-bold tracking-tight text-zinc-900 truncate">
@@ -147,7 +155,6 @@
                     <input type="text" id="otraActividad" placeholder="Especificar actividad manualmente" class="hidden mt-2 w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs">
                 </div>
 
-                <!-- Dates Calendar Section -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                         <label data-i18n="lblFechaReserva" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Fecha de Reserva (Hoy)</label>
@@ -183,7 +190,6 @@
                     </div>
                 </div>
 
-                <!-- Checkin & Location -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 min-w-0">
                     <div class="min-w-0">
                         <label data-i18n="lblCheckin" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Check In</label>
@@ -249,7 +255,6 @@
                     </div>
                 </div>
 
-                <!-- Operational Notes -->
                 <div>
                     <label data-i18n="lblNotas" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Notas / Observaciones del Servicio</label>
                     <textarea id="notas" rows="2" placeholder="Restricciones alimenticias, decoraciones, itinerarios especiales..." class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs"></textarea>
@@ -275,138 +280,137 @@
             </form>
         </div>
 
-        <!-- Voucher Card Preview -->
-        <div id="voucher-preview" class="lg:col-span-7 bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200/80 shadow-sm print-card flex flex-col justify-between overflow-hidden">
+        <div id="voucher-preview" class="lg:col-span-7 bg-white p-5 sm:p-7 md:p-8 rounded-2xl border border-zinc-200/90 shadow-lg print-card flex flex-col justify-between overflow-hidden">
             <div>
                 <!-- Voucher Header -->
-                <div class="flex flex-row justify-between items-center border-b border-zinc-200 pb-3 mb-3.5 gap-2 pt-0.5">
-                    <div class="min-w-0 pr-1">
-                        <h1 data-i18n="pvMainTitle" class="text-base sm:text-xl font-black tracking-tight text-zinc-950 uppercase leading-tight">Voucher de Reserva</h1>
-                        <p data-i18n="pvSubTitle" class="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-0.5 leading-none">Confirmation Document</p>
+                <div class="text-center border-b-2 border-zinc-900 pb-4 mb-4 pt-1">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                        <p data-i18n="pvSubTitle" class="text-[10px] sm:text-[11px] font-extrabold tracking-widest uppercase text-zinc-400 leading-none">Confirmation Voucher</p>
                     </div>
-                    <div class="flex-shrink-0 text-right">
-                        <span id="pv-confirmacion" class="inline-flex items-center justify-center bg-zinc-900 text-white font-mono text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg whitespace-nowrap leading-none tracking-wider shadow-2xs">ACT-XXXXXX-X</span>
+                    <h1 data-i18n="pvMainTitle" class="text-xl sm:text-3xl font-black tracking-tight text-zinc-950 uppercase leading-tight mb-2.5">Voucher de Reserva</h1>
+                    <div class="flex justify-center items-center">
+                        <span id="pv-confirmacion" class="inline-flex items-center justify-center text-center bg-zinc-950 text-white font-mono text-xs sm:text-sm font-extrabold px-4 py-2 rounded-xl whitespace-nowrap leading-tight tracking-wider shadow-sm border border-zinc-800">ACT-XXXXXX-X</span>
                     </div>
                 </div>
 
-                <!-- Voucher Body Details -->
-                <div class="space-y-3">
+                <div class="space-y-3.5">
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Guest & Hotel Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50/80 p-3 rounded-xl border border-zinc-200/60">
                         <div class="min-w-0">
-                            <p data-i18n="pvPasajero" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Pasajero Principal</p>
-                            <p id="pv-nombre" class="text-sm font-bold text-zinc-900 break-words">---</p>
-                            <p id="pv-telefono" class="text-xs text-zinc-500 font-medium hidden break-words mt-0.5"></p>
+                            <p data-i18n="pvPasajero" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">Pasajero Principal</p>
+                            <p id="pv-nombre" class="text-sm sm:text-base font-extrabold text-zinc-950 break-words">---</p>
+                            <p id="pv-telefono" class="text-xs text-zinc-600 font-semibold hidden break-words mt-0.5"></p>
                         </div>
                         <div class="min-w-0">
-                            <p data-i18n="pvHotelLabel" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Hotel / Hospedaje</p>
-                            <p id="pv-hotel" class="text-sm font-bold text-zinc-900 break-words">---</p>
+                            <p data-i18n="pvHotelLabel" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">Hotel / Hospedaje</p>
+                            <p id="pv-hotel" class="text-sm sm:text-base font-extrabold text-zinc-950 break-words">---</p>
                         </div>
                     </div>
 
-                    <div class="min-w-0 pt-0.5">
-                        <p data-i18n="pvActividadContratada" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Actividad contratada</p>
-                        <p id="pv-actividad" class="text-sm sm:text-base font-bold text-zinc-900 break-words">---</p>
-                        <p id="pv-descriptivo" class="text-xs text-zinc-500 italic mt-0.5 hidden break-words">---</p>
+                    <!-- Booked Activity Section -->
+                    <div class="min-w-0 pt-0.5 px-1">
+                        <p data-i18n="pvActividadContratada" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">Actividad contratada</p>
+                        <p id="pv-actividad" class="text-base sm:text-lg font-black text-zinc-950 break-words">---</p>
+                        <p id="pv-descriptivo" class="text-xs text-zinc-600 italic mt-1 leading-relaxed hidden break-words">---</p>
                     </div>
 
-                    <!-- Technical specs card (optional catalog specs) -->
-                    <div id="pv-fichaTecnica" class="hidden p-2.5 bg-zinc-50/90 rounded-xl border border-zinc-100 text-xs space-y-1.5">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 border-b border-zinc-200/60 pb-1.5">
+                    <!-- Technical specs card -->
+                    <div id="pv-fichaTecnica" class="hidden p-3 bg-zinc-50/90 rounded-xl border border-zinc-200/70 text-xs space-y-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-zinc-200/80 pb-2">
                             <div id="wrap-pv-pies" class="hidden min-w-0">
-                                <span data-i18n="pvDimension" class="text-[9px] uppercase font-bold text-zinc-400 block">Dimensión</span>
-                                <span id="pv-pies" class="font-semibold text-zinc-700 break-words text-xs">---</span>
+                                <span data-i18n="pvDimension" class="text-[9px] uppercase font-extrabold text-zinc-400 block">Dimensión</span>
+                                <span id="pv-pies" class="font-bold text-zinc-800 break-words text-xs">---</span>
                             </div>
                             <div id="wrap-pv-capacidad" class="hidden min-w-0">
-                                <span data-i18n="pvCapacidad" class="text-[9px] uppercase font-bold text-zinc-400 block">Capacidad Máxima</span>
-                                <span id="pv-capacidad" class="font-semibold text-zinc-700 break-words text-xs">---</span>
+                                <span data-i18n="pvCapacidad" class="text-[9px] uppercase font-extrabold text-zinc-400 block">Capacidad Máxima</span>
+                                <span id="pv-capacidad" class="font-bold text-zinc-800 break-words text-xs">---</span>
                             </div>
                         </div>
                         <div id="wrap-pv-incluye" class="hidden min-w-0">
-                            <span data-i18n="pvIncluye" class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">El servicio incluye</span>
-                            <p id="pv-incluye" class="text-zinc-600 leading-relaxed text-[11px] break-words">---</p>
+                            <span data-i18n="pvIncluye" class="text-[9px] uppercase font-extrabold text-zinc-400 block mb-0.5">El servicio incluye</span>
+                            <p id="pv-incluye" class="text-zinc-700 leading-relaxed text-[11px] font-medium break-words">---</p>
                         </div>
                     </div>
 
-                    <!-- Dates & Pax grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 border-t border-zinc-100 pt-2.5">
+                    <div class="grid grid-cols-3 gap-2 border-t border-zinc-200/80 pt-3">
                         <div class="min-w-0">
-                            <p data-i18n="pvFechaReservaLbl" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Fecha de Reserva</p>
-                            <p id="pv-fecha-reserva" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
+                            <p data-i18n="pvFechaReservaLbl" class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 mb-1">Fecha Reserva</p>
+                            <p id="pv-fecha-reserva" class="text-xs sm:text-sm font-bold text-zinc-900 leading-snug break-words">---</p>
                         </div>
                         <div class="min-w-0">
-                            <p data-i18n="pvFechaServicioLbl" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Fecha del Servicio</p>
-                            <p id="pv-fecha" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
+                            <p data-i18n="pvFechaServicioLbl" class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 mb-1">Fecha Servicio</p>
+                            <p id="pv-fecha" class="text-xs sm:text-sm font-bold text-zinc-950 leading-snug break-words">---</p>
                         </div>
                         <div class="min-w-0">
-                            <p data-i18n="pvDistribucion" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Pasajeros</p>
-                            <p id="pv-personas" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
+                            <p data-i18n="pvDistribucion" class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 mb-1">Pasajeros</p>
+                            <p id="pv-personas" class="text-xs sm:text-sm font-bold text-zinc-900 leading-snug break-words">---</p>
                         </div>
                     </div>
 
                     <!-- Checkin & Meeting Point grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 border-b border-zinc-100 pb-2.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 border-b border-zinc-200/80 pb-3">
                         <div class="min-w-0">
-                            <p data-i18n="pvHorario" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Horario Check-in</p>
-                            <p id="pv-checkin" class="text-xs sm:text-sm font-semibold text-zinc-900">---</p>
+                            <p data-i18n="pvHorario" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Horario Check-in</p>
+                            <p id="pv-checkin" class="text-xs sm:text-sm font-extrabold text-zinc-950 leading-snug">---</p>
                         </div>
-                        <div class="min-w-0">
-                            <p data-i18n="pvPuntoEncuentro" class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-0.5">Punto de Encuentro</p>
-                            <p id="pv-checkpoint" class="text-xs sm:text-sm font-semibold text-zinc-900 break-words">---</p>
+                        <div class="sm:col-span-2 min-w-0">
+                            <p data-i18n="pvPuntoEncuentro" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Punto de Encuentro</p>
+                            <p id="pv-checkpoint" class="text-xs sm:text-sm font-extrabold text-zinc-950 leading-snug break-words">---</p>
                         </div>
                     </div>
 
-                    <!-- Payment Details Card (Fluid) -->
-                    <div class="bg-zinc-900 text-white p-3 rounded-xl shadow-xs space-y-2.5">
-                        <div class="grid grid-cols-3 gap-1.5 border-b border-zinc-800 pb-2 text-center sm:text-left min-w-0">
+                    <!-- Executive Payment Details Banner -->
+                    <div class="bg-zinc-950 text-white p-3.5 sm:p-4 rounded-xl shadow-md border border-zinc-800 space-y-2.5">
+                        <div class="grid grid-cols-3 gap-2 border-b border-zinc-800/90 pb-2 text-left min-w-0">
                             <div class="min-w-0">
-                                <p data-i18n="pvDepositoLbl" class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">Depósito Pagado</p>
-                                <p id="pv-deposito" class="text-xs sm:text-sm font-extrabold text-emerald-400 truncate">---</p>
+                                <p data-i18n="pvDepositoLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Depósito Pagado</p>
+                                <p id="pv-deposito" class="text-xs sm:text-sm font-black text-emerald-400 whitespace-nowrap">---</p>
                             </div>
                             <div class="min-w-0">
-                                <p data-i18n="pvSaldoLbl" class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">Saldo Pendiente</p>
-                                <p id="pv-saldo" class="text-xs sm:text-sm font-extrabold text-amber-400 truncate">---</p>
+                                <p data-i18n="pvSaldoLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Saldo Pendiente</p>
+                                <p id="pv-saldo" class="text-xs sm:text-sm font-black text-amber-400 whitespace-nowrap">---</p>
                             </div>
                             <div class="text-right min-w-0">
-                                <p data-i18n="pvTotalLbl" class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">Total Reserva</p>
-                                <p id="pv-total" class="text-xs sm:text-sm font-extrabold text-white truncate">---</p>
+                                <p data-i18n="pvTotalLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Total Reserva</p>
+                                <p id="pv-total" class="text-xs sm:text-sm font-black text-white whitespace-nowrap">---</p>
                             </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 pt-0.5">
+                        <div class="flex flex-row justify-between items-center gap-2 pt-0.5 min-w-0">
                             <div class="min-w-0">
-                                <p data-i18n="pvBalancePagar" class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Monto Restante a Cobrar</p>
-                                <p id="pv-balance" class="text-sm sm:text-base font-black tracking-tight text-white break-all">---</p>
+                                <p data-i18n="pvBalancePagar" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Monto Restante a Cobrar</p>
+                                <p id="pv-balance" class="text-sm sm:text-lg font-black tracking-tight text-white whitespace-nowrap">---</p>
                             </div>
-                            <div class="w-full sm:w-auto text-left sm:text-right border-t sm:border-t-0 sm:border-l border-zinc-800 sm:border-zinc-700 pt-1 sm:pt-0 sm:pl-3 min-w-0">
-                                <p data-i18n="pvConversionRef" class="text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider text-zinc-400">Conversión Ref.</p>
-                                <p id="pv-conversion" class="text-xs font-mono text-zinc-300 break-all">---</p>
+                            <div class="text-right border-l border-zinc-800 pl-3 sm:pl-4 min-w-0 flex-shrink-0">
+                                <p data-i18n="pvConversionRef" class="text-[9px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Conversión Ref.</p>
+                                <p id="pv-conversion" class="text-xs sm:text-sm font-mono font-bold text-zinc-300 whitespace-nowrap">---</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Notes preview -->
-                    <div id="wrap-pv-notas" class="hidden bg-amber-50/70 border border-amber-200/80 p-2.5 rounded-xl min-w-0">
-                        <p data-i18n="pvNotasObs" class="text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-0.5">Notas / Observaciones</p>
-                        <p id="pv-notas" class="text-xs text-zinc-800 italic whitespace-pre-line break-words"></p>
+                    <div id="wrap-pv-notas" class="hidden bg-amber-50/80 border border-amber-200/90 p-2.5 rounded-xl min-w-0">
+                        <p data-i18n="pvNotasObs" class="text-[10px] font-extrabold uppercase tracking-wider text-amber-900 mb-0.5">Notas / Observaciones</p>
+                        <p id="pv-notas" class="text-xs text-zinc-800 font-medium italic whitespace-pre-line break-words"></p>
                     </div>
                 </div>
             </div>
 
-            <!-- Footer & QR Code -->
-            <div class="mt-4 border-t border-zinc-100 pt-3 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div class="text-center sm:text-left text-[10px] text-zinc-400 w-full sm:max-w-[68%]">
-                    <p data-i18n="footerCompany" class="font-bold text-zinc-700 mb-0.5">Servicios Turísticos y Náuticos</p>
+            <div class="mt-4 border-t border-zinc-200/90 pt-3 flex flex-row justify-between items-center gap-3">
+                <div class="text-left text-[10px] text-zinc-500 w-full max-w-[70%]">
+                    <p data-i18n="footerCompany" class="font-extrabold text-zinc-800 text-[10px] sm:text-[11px] mb-0.5">Servicios Turísticos y Náuticos</p>
                     <div class="my-0.5">
-                        <p data-i18n="footerPoliciesTitle" class="font-semibold text-zinc-700 text-[9px] uppercase tracking-wider">Políticas y restricciones:</p>
-                        <p data-i18n="footerPoliciesText" class="font-bold text-zinc-900 text-[10px]">Depósito no reembolsable, cancelación mínima 12 hrs. antes.</p>
+                        <p data-i18n="footerPoliciesTitle" class="font-bold text-zinc-700 text-[9px] uppercase tracking-wider">Políticas y restricciones:</p>
+                        <p data-i18n="footerPoliciesText" class="font-semibold text-zinc-900 text-[9px] leading-tight">Depósito no reembolsable, cancelación mínima 12 hrs. antes.</p>
                     </div>
-                    <p data-i18n="footerLocation">Cancún, Quintana Roo, México.</p>
-                    <p data-i18n="footerDisclaimer" class="mt-0.5 text-[9px] text-zinc-400 italic leading-tight">Voucher válido con validación QR activa en muelles o punto de registro.</p>
+                    <p data-i18n="footerLocation" class="font-medium text-zinc-500 text-[9px]">Cancún, Quintana Roo, México.</p>
+                    <p data-i18n="footerDisclaimer" class="mt-0.5 text-[8px] text-zinc-400 italic leading-tight">Voucher válido con validación QR activa en muelles o punto de registro.</p>
                 </div>
                 <div class="text-center flex flex-col items-center flex-shrink-0">
-                    <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=Voucher" alt="QR" class="w-[80px] h-[80px] border border-zinc-200 p-1 rounded-lg bg-white shadow-2xs">
-                    <span data-i18n="pvValidarReserva" class="text-[8px] font-mono font-semibold text-zinc-400 mt-1 uppercase tracking-wider">Validar Reserva</span>
+                    <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=Voucher" alt="QR" class="w-[78px] h-[78px] sm:w-[82px] sm:h-[82px] border border-zinc-200/90 p-1 rounded-xl bg-white shadow-xs">
+                    <span data-i18n="pvValidarReserva" class="text-[8px] font-mono font-bold text-zinc-400 mt-1 uppercase tracking-wider">Validar Reserva</span>
                 </div>
             </div>
         </div>
@@ -1127,14 +1131,35 @@
             const posicionScrollOriginal = window.scrollY;
             window.scrollTo(0, 0);
 
+            // High-definition render configuration with onclone layout lock
             const opciones = {
                 useCORS: true, 
-                scale: 2.5, 
+                scale: 3, 
                 backgroundColor: '#ffffff',
                 scrollX: 0,
                 scrollY: 0,
-                windowWidth: Math.max(document.documentElement.offsetWidth, 768),
-                windowHeight: document.documentElement.offsetHeight
+                logging: false,
+                onclone: (clonedDoc) => {
+                    const clonedTarget = clonedDoc.getElementById('voucher-preview');
+                    if (clonedTarget) {
+                        clonedTarget.style.width = '700px';
+                        clonedTarget.style.maxWidth = '700px';
+                        clonedTarget.style.height = 'auto';
+                        clonedTarget.style.minHeight = 'auto';
+                        clonedTarget.style.margin = '0 auto';
+                        clonedTarget.style.padding = '26px';
+                        clonedTarget.style.boxSizing = 'border-box';
+                        clonedTarget.style.overflow = 'visible';
+
+                        // Strip truncate constraints on clone so text never gets clipped vertically or horizontally
+                        const truncatedEls = clonedTarget.querySelectorAll('.truncate');
+                        truncatedEls.forEach(el => {
+                            el.classList.remove('truncate');
+                            el.style.overflow = 'visible';
+                            el.style.whiteSpace = 'normal';
+                        });
+                    }
+                }
             };
 
             setTimeout(() => {
@@ -1156,7 +1181,6 @@
             }, 100);
         }
 
-        // Attach real-time event listeners for form inputs
         document.getElementById('reserveForm').addEventListener('input', syncPreview);
         document.getElementById('actividad').addEventListener('change', syncPreview);
         document.getElementById('adultos').addEventListener('change', syncPreview);
