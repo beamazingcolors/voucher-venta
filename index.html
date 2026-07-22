@@ -62,7 +62,7 @@
             z-index: 2;
         }
 
-        /* High definition single-page print rules */
+        /* High definition single/multi-page print rules */
         @media print {
             @page {
                 size: A4 portrait;
@@ -73,28 +73,41 @@
                 color: #09090b !important; 
                 padding: 0 !important; 
                 margin: 0 !important;
-                height: 100% !important;
-                overflow: hidden !important;
+                height: auto !important;
+                overflow: visible !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
             .no-print { 
                 display: none !important; 
             }
-            #voucher-preview { 
+            .voucher-card-item { 
                 border: 1px solid #d4d4d8 !important; 
                 box-shadow: none !important; 
-                margin: 0 auto !important; 
+                margin: 0 auto 1rem auto !important; 
                 padding: 1rem 1.25rem !important; 
                 width: 100% !important; 
                 max-width: 100% !important; 
                 box-sizing: border-box !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
-                page-break-before: avoid !important;
-                page-break-after: avoid !important;
+                page-break-after: always !important;
+                break-after: page !important;
                 height: auto !important;
-                max-height: 98vh !important;
+                border-radius: 0.75rem !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .summary-sheet-item {
+                border: 2px solid #18181b !important;
+                box-shadow: none !important;
+                margin: 0 auto !important;
+                padding: 1.25rem !important;
+                width: 100% !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-before: always !important;
+                break-before: page !important;
                 border-radius: 0.75rem !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -102,34 +115,62 @@
         }
     </style>
 </head>
-<body class="bg-zinc-100/90 text-zinc-800 min-h-screen antialiased selection:bg-zinc-900 selection:text-white pb-10">
+<body class="bg-zinc-100/90 text-zinc-800 min-h-screen antialiased selection:bg-zinc-900 selection:text-white pb-12">
 
     <div class="max-w-7xl mx-auto px-3 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         <!-- Form Section -->
         <div id="form-container" class="lg:col-span-5 w-full bg-white p-4 sm:p-5 md:p-6 rounded-2xl border border-zinc-200/90 shadow-sm h-fit no-print overflow-hidden">
             
-            <div class="flex items-center justify-between border-b border-zinc-100 pb-3.5 mb-4 gap-2">
-                <div class="min-w-0">
-                    <h2 data-i18n="titleForm" class="text-base sm:text-lg md:text-xl font-bold tracking-tight text-zinc-900 truncate">
-                        Captura de Reserva
-                    </h2>
-                    <p data-i18n="subtitleForm" class="text-[11px] text-zinc-400 font-medium hidden sm:block">Ingrese los detalles para generar el voucher</p>
+            <!-- Header & Language Switcher & Batch Count -->
+            <div class="border-b border-zinc-100 pb-3.5 mb-4 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <h2 data-i18n="titleForm" class="text-base sm:text-lg md:text-xl font-bold tracking-tight text-zinc-900 truncate">
+                            Captura de Reserva
+                        </h2>
+                        <p data-i18n="subtitleForm" class="text-[11px] text-zinc-400 font-medium hidden sm:block">Ingrese los detalles para generar el voucher</p>
+                    </div>
+                    
+                    <div class="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200/80 flex-shrink-0">
+                        <button type="button" id="btn-lang-es" onclick="switchLanguage('es')" class="px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95">
+                            🇲🇽 ES
+                        </button>
+                        <button type="button" id="btn-lang-en" onclick="switchLanguage('en')" class="px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95">
+                            🇺🇸 EN
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200/80 flex-shrink-0">
-                    <button type="button" id="btn-lang-es" onclick="switchLanguage('es')" class="px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95">
-                        🇲🇽 ES
-                    </button>
-                    <button type="button" id="btn-lang-en" onclick="switchLanguage('en')" class="px-2.5 py-1.5 sm:py-1 text-xs font-semibold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95">
-                        🇺🇸 EN
-                    </button>
+
+                <!-- Multi-Booking Selector Pill -->
+                <div class="p-2.5 bg-zinc-900 text-white rounded-xl flex items-center justify-between gap-2 shadow-sm">
+                    <div class="min-w-0">
+                        <span data-i18n="lblCantReservas" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">Cantidad de Reservas</span>
+                        <span data-i18n="subCantReservas" class="text-[9px] text-zinc-400 block truncate">Máximo 10 reservas en un solo voucher</span>
+                    </div>
+                    <select id="select-cant-reservas" onchange="changeCantidadReservas(parseInt(this.value))" class="bg-zinc-800 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+                        <option value="1">1 Reserva</option>
+                        <option value="2">2 Reservas</option>
+                        <option value="3">3 Reservas</option>
+                        <option value="4">4 Reservas</option>
+                        <option value="5">5 Reservas</option>
+                        <option value="6">6 Reservas</option>
+                        <option value="7">7 Reservas</option>
+                        <option value="8">8 Reservas</option>
+                        <option value="9">9 Reservas</option>
+                        <option value="10">10 Reservas</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Reservation Tabs Bar -->
+                <div id="tabs-reservas-bar" class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                    <!-- Tab buttons injected via JS -->
                 </div>
             </div>
             
             <form id="reserveForm" class="space-y-3.5" onsubmit="event.preventDefault();">
                 
-                <!-- Client Name -->
+                <!-- Client Name (Primary / Base field) -->
                 <div>
                     <label data-i18n="lblCliente" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Nombre del Cliente</label>
                     <input type="text" id="nombreCliente" required placeholder="Ej. Juan Pérez" class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
@@ -281,137 +322,14 @@
             </form>
         </div>
 
-        <div id="voucher-preview" class="lg:col-span-7 bg-white p-5 sm:p-7 md:p-8 rounded-2xl border border-zinc-200/90 shadow-lg print-card flex flex-col justify-between overflow-hidden">
-            <div>
-                <!-- Voucher Header -->
-                <div class="text-center border-b-2 border-zinc-900 pb-4 mb-4 pt-1">
-                    <div class="flex items-center justify-center gap-2 mb-1">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                        <p data-i18n="pvSubTitle" class="text-[10px] sm:text-[11px] font-extrabold tracking-widest uppercase text-zinc-400 leading-none">Confirmation Voucher</p>
-                    </div>
-                    <h1 data-i18n="pvMainTitle" class="text-xl sm:text-3xl font-black tracking-tight text-zinc-950 uppercase leading-tight mb-2.5">Voucher de Reserva</h1>
-                    <div class="flex justify-center items-center">
-                        <span id="pv-confirmacion" class="inline-flex items-center justify-center text-center bg-zinc-950 text-white font-mono text-xs sm:text-sm font-extrabold px-4 py-2 rounded-xl whitespace-nowrap leading-tight tracking-wider shadow-sm border border-zinc-800">ACT-XXXXXX-X</span>
-                    </div>
-                </div>
-
-                <div class="space-y-3.5">
-                    
-                    <!-- Guest & Hotel Row -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50/80 p-3 rounded-xl border border-zinc-200/60">
-                        <div class="min-w-0">
-                            <p data-i18n="pvPasajero" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">Pasajero Principal</p>
-                            <p id="pv-nombre" class="text-sm sm:text-base font-extrabold text-zinc-950 break-words">---</p>
-                            <p id="pv-telefono" class="text-xs text-zinc-600 font-semibold hidden break-words mt-0.5"></p>
-                        </div>
-                        <div class="min-w-0">
-                            <p data-i18n="pvHotelLabel" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">Hotel / Hospedaje</p>
-                            <p id="pv-hotel" class="text-sm sm:text-base font-extrabold text-zinc-950 break-words">---</p>
-                        </div>
-                    </div>
-
-                    <!-- Booked Activity Section -->
-                    <div class="min-w-0 pt-0.5 px-1">
-                        <p data-i18n="pvActividadContratada" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">Actividad contratada</p>
-                        <p id="pv-actividad" class="text-base sm:text-lg font-black text-zinc-950 break-words">---</p>
-                    </div>
-
-                    <!-- Technical specs card -->
-                    <div id="pv-fichaTecnica" class="hidden p-3 bg-zinc-50/90 rounded-xl border border-zinc-200/70 text-xs space-y-2">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-zinc-200/80 pb-2">
-                            <div id="wrap-pv-pies" class="hidden min-w-0">
-                                <span data-i18n="pvDimension" class="text-[9px] uppercase font-extrabold text-zinc-400 block">Dimensión</span>
-                                <span id="pv-pies" class="font-bold text-zinc-800 break-words text-xs">---</span>
-                            </div>
-                            <div id="wrap-pv-capacidad" class="hidden min-w-0">
-                                <span data-i18n="pvCapacidad" class="text-[9px] uppercase font-extrabold text-zinc-400 block">Capacidad Máxima</span>
-                                <span id="pv-capacidad" class="font-bold text-zinc-800 break-words text-xs">---</span>
-                            </div>
-                        </div>
-                        <div id="wrap-pv-incluye" class="hidden min-w-0">
-                            <span data-i18n="pvIncluye" class="text-[9px] uppercase font-extrabold text-zinc-400 block mb-0.5">El servicio incluye</span>
-                            <p id="pv-incluye" class="text-zinc-700 leading-relaxed text-[11px] font-medium break-words">---</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2 border-t border-zinc-200/80 pt-3">
-                        <div class="min-w-0">
-                            <p data-i18n="pvFechaReservaLbl" class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 mb-1">Fecha Reserva</p>
-                            <p id="pv-fecha-reserva" class="text-xs sm:text-sm font-bold text-zinc-900 leading-snug break-words">---</p>
-                        </div>
-                        <div class="min-w-0">
-                            <p data-i18n="pvFechaServicioLbl" class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 mb-1">Fecha Servicio</p>
-                            <p id="pv-fecha" class="text-xs sm:text-sm font-bold text-zinc-950 leading-snug break-words">---</p>
-                        </div>
-                        <div class="min-w-0">
-                            <p data-i18n="pvDistribucion" class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 mb-1">Pasajeros</p>
-                            <p id="pv-personas" class="text-xs sm:text-sm font-bold text-zinc-900 leading-snug break-words">---</p>
-                        </div>
-                    </div>
-
-                    <!-- Checkin & Meeting Point grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 border-b border-zinc-200/80 pb-3">
-                        <div class="min-w-0">
-                            <p data-i18n="pvHorario" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Horario Check-in</p>
-                            <p id="pv-checkin" class="text-xs sm:text-sm font-extrabold text-zinc-950 leading-snug">---</p>
-                        </div>
-                        <div class="sm:col-span-2 min-w-0">
-                            <p data-i18n="pvPuntoEncuentro" class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Punto de Encuentro</p>
-                            <p id="pv-checkpoint" class="text-xs sm:text-sm font-extrabold text-zinc-950 leading-snug break-words">---</p>
-                        </div>
-                    </div>
-
-                    <!-- Executive Payment Details Banner -->
-                    <div class="bg-zinc-950 text-white p-3.5 sm:p-4 rounded-xl shadow-md border border-zinc-800 space-y-2.5">
-                        <div class="grid grid-cols-3 gap-2 border-b border-zinc-800/90 pb-2 text-left min-w-0">
-                            <div class="min-w-0">
-                                <p data-i18n="pvDepositoLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Depósito Pagado</p>
-                                <p id="pv-deposito" class="text-xs sm:text-sm font-black text-emerald-400 whitespace-nowrap">---</p>
-                            </div>
-                            <div class="min-w-0">
-                                <p data-i18n="pvSaldoLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Saldo Pendiente</p>
-                                <p id="pv-saldo" class="text-xs sm:text-sm font-black text-amber-400 whitespace-nowrap">---</p>
-                            </div>
-                            <div class="text-right min-w-0">
-                                <p data-i18n="pvTotalLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Total Reserva</p>
-                                <p id="pv-total" class="text-xs sm:text-sm font-black text-white whitespace-nowrap">---</p>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-row justify-between items-center gap-2 pt-0.5 min-w-0">
-                            <div class="min-w-0">
-                                <p data-i18n="pvBalancePagar" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Monto Restante a Cobrar</p>
-                                <p id="pv-balance" class="text-sm sm:text-lg font-black tracking-tight text-white whitespace-nowrap">---</p>
-                            </div>
-                            <div class="text-right border-l border-zinc-800 pl-3 sm:pl-4 min-w-0 flex-shrink-0">
-                                <p data-i18n="pvConversionRef" class="text-[9px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">Conversión Ref.</p>
-                                <p id="pv-conversion" class="text-xs sm:text-sm font-mono font-bold text-zinc-300 whitespace-nowrap">---</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notes preview -->
-                    <div id="wrap-pv-notas" class="hidden bg-amber-50/80 border border-amber-200/90 p-2.5 rounded-xl min-w-0">
-                        <p data-i18n="pvNotasObs" class="text-[10px] font-extrabold uppercase tracking-wider text-amber-900 mb-0.5">Notas / Observaciones</p>
-                        <p id="pv-notas" class="text-xs text-zinc-800 font-medium italic whitespace-pre-line break-words"></p>
-                    </div>
-                </div>
+        <!-- Voucher Card Preview Outer Container -->
+        <div id="vouchers-main-wrapper" class="lg:col-span-7 space-y-6">
+            <!-- Dynamic Vouchers injected via JS -->
+            <div id="vouchers-list-container" class="space-y-6">
             </div>
 
-            <div class="mt-4 border-t border-zinc-200/90 pt-3 flex flex-row justify-between items-center gap-3">
-                <div class="text-left text-[10px] text-zinc-500 w-full max-w-[70%]">
-                    <p data-i18n="footerCompany" class="font-extrabold text-zinc-800 text-[10px] sm:text-[11px] mb-0.5">Servicios Turísticos y Náuticos</p>
-                    <div class="my-0.5">
-                        <p data-i18n="footerPoliciesTitle" class="font-bold text-zinc-700 text-[9px] uppercase tracking-wider">Políticas y restricciones:</p>
-                        <p data-i18n="footerPoliciesText" class="font-semibold text-zinc-900 text-[9px] leading-tight">Depósito no reembolsable, cancelación mínima 12 hrs. antes.</p>
-                    </div>
-                    <p data-i18n="footerLocation" class="font-medium text-zinc-500 text-[9px]">Cancún, Quintana Roo, México.</p>
-                    <p data-i18n="footerDisclaimer" class="mt-0.5 text-[8px] text-zinc-400 italic leading-tight">Voucher válido con validación QR activa en muelles o punto de registro.</p>
-                </div>
-                <div class="text-center flex flex-col items-center flex-shrink-0">
-                    <img id="qrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=Voucher" alt="QR" class="w-[78px] h-[78px] sm:w-[82px] sm:h-[82px] border border-zinc-200/90 p-1 rounded-xl bg-white shadow-xs">
-                    <span data-i18n="pvValidarReserva" class="text-[8px] font-mono font-bold text-zinc-400 mt-1 uppercase tracking-wider">Validar Reserva</span>
-                </div>
+            <!-- Dynamic Financial Control Sheet (Injected when N > 1) -->
+            <div id="summary-sheet-wrapper" class="hidden">
             </div>
         </div>
 
@@ -437,31 +355,52 @@
         window.addEventListener('load', resetScrollToTop);
         document.addEventListener('DOMContentLoaded', resetScrollToTop);
 
-        // Remove any URL hash on initial load to prevent automatic anchor scrolling
         if (window.location.hash) {
             history.replaceState(null, null, window.location.pathname + window.location.search);
         }
 
-        // Updated TSV Spreadsheet URL
         const TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRXjqliiJ7JPnaYv8POjcyZnCKa0TX8qklWLwz2vYrISQOLBjxMyOVl0LQ3gHCvHIs-BHvJox-ADxvP/pub?output=tsv';
 
         window.catalogoActividades = {};
         let currentLang = 'es';
-        let checkinPeriod = 'AM';
 
-        function setCheckinPeriod(period) {
-            checkinPeriod = period;
-            const btnAm = document.getElementById('btn-period-am');
-            const btnPm = document.getElementById('btn-period-pm');
-            if (period === 'AM') {
-                btnAm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95";
-                btnPm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95";
-            } else {
-                btnPm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95";
-                btnAm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95";
-            }
-            syncPreview();
+        // Multi-Booking state management
+        let totalReservasCount = 1;
+        let activeReservaIndex = 0; // 0 to totalReservasCount - 1
+        let reservasData = [];
+
+        function createDefaultReserva(num) {
+            const today = new Date().toISOString().split('T')[0];
+            return {
+                id: num,
+                nombreCliente: '',
+                telefono: '',
+                hotel: '',
+                actividad: '',
+                otraActividad: '',
+                fechaReserva: today,
+                fechaServicio: today,
+                adultos: 1,
+                menores: 0,
+                checkin: '09:00',
+                checkinPeriod: 'AM',
+                checkpoint: '',
+                divisa: 'MXN',
+                deposito: '',
+                saldo: '',
+                tipoCambio: '20.00',
+                notas: ''
+            };
         }
+
+        function initReservasData() {
+            reservasData = [];
+            for (let i = 1; i <= 10; i++) {
+                reservasData.push(createDefaultReserva(i));
+            }
+        }
+
+        initReservasData();
 
         function getSimboloDivisa(d) {
             if (d === 'EUR') return '€';
@@ -472,6 +411,8 @@
             es: {
                 titleForm: "Captura de Reserva",
                 subtitleForm: "Ingrese los detalles para generar el voucher",
+                lblCantReservas: "Cantidad de Reservas",
+                subCantReservas: "Máximo 10 reservas en un solo voucher",
                 lblCliente: "Nombre del Cliente",
                 lblTelefono: "Teléfono / WhatsApp",
                 lblHotel: "Hotel / Hospedaje",
@@ -522,6 +463,27 @@
                 footerDisclaimer: "Voucher válido con validación QR activa en muelles o punto de registro.",
                 pvValidarReserva: "Validar Reserva",
 
+                // Financial Summary Sheet labels
+                summaryTitle: "RESUMEN",
+                summarySubTitle: "",
+                summaryClientHeader: "Resumen de Reservas de:",
+                summaryTotalBookings: "Total de Servicios Contratados:",
+                summaryTableCode: "Código / ID",
+                summaryTableDate: "Fecha Servicio",
+                summaryTableActivity: "Actividad / Embarcación",
+                summaryTablePax: "Pasajeros",
+                summaryTableDeposit: "Depósito Pagado",
+                summaryTableBalance: "Saldo Pendiente",
+                summaryTableTotal: "Total Reserva",
+                summaryTotalDeposits: "TOTAL DEPOSITADO",
+                summaryTotalBalances: "TOTAL PENDIENTE A COBRAR",
+                summaryGrandTotal: "GRAN TOTAL GENERAL",
+                summaryRefConversion: "Equivalencia Total Estimada:",
+                summaryConfirmedCount: "Reservas Confirmadas",
+                summaryFooterNote: "* Resumen emitido automáticamente para control y verificación de reservas.",
+                pvServiceIndex: "Servicio",
+                pvOf: "de",
+
                 // Option strings
                 optAdult: "Adulto",
                 optAdults: "Adultos",
@@ -534,6 +496,8 @@
             en: {
                 titleForm: "Reservation Capture",
                 subtitleForm: "Enter booking details to generate voucher",
+                lblCantReservas: "Number of Bookings",
+                subCantReservas: "Up to 10 reservations in a single batch",
                 lblCliente: "Client Name",
                 lblTelefono: "Phone / WhatsApp",
                 lblHotel: "Hotel / Accommodation",
@@ -584,18 +548,39 @@
                 footerDisclaimer: "Voucher valid upon active QR verification at dock or check-in location.",
                 pvValidarReserva: "Validate Booking",
 
-                // Option strings
-                optAdult: "Adult",
-                optAdults: "Adults",
-                optChild: "Child",
-                optChildren: "Children",
-                optOther: "Other (Specify)",
-                optManual: "Specify Activity",
-                msgCopiado: "Image copied to clipboard! Paste (Ctrl+V) in the WhatsApp chat."
-            }
-        };
+            // Financial Summary Sheet labels
+            summaryTitle: "SUMMARY",
+            summarySubTitle: "",
+            summaryClientHeader: "Reservations Summary for:",
+            summaryTotalBookings: "Total Booked Services:",
+            summaryTableCode: "Code / ID",
+            summaryTableDate: "Service Date",
+            summaryTableActivity: "Activity / Vessel",
+            summaryTablePax: "Guests",
+            summaryTableDeposit: "Deposit Paid",
+            summaryTableBalance: "Balance Due",
+            summaryTableTotal: "Total Price",
+            summaryTotalDeposits: "TOTAL DEPOSITED",
+            summaryTotalBalances: "TOTAL BALANCE DUE",
+            summaryGrandTotal: "GRAND TOTAL",
+            summaryRefConversion: "Est. Total Conversion:",
+            summaryConfirmedCount: "Confirmed Bookings",
+            summaryFooterNote: "* Summary automatically generated for booking control and verification.",
+            pvServiceIndex: "Service",
+            pvOf: "of",
 
-        function switchLanguage(lang) {
+            // Option strings
+            optAdult: "Adult",
+            optAdults: "Adults",
+            optChild: "Child",
+            optChildren: "Children",
+            optOther: "Other (Specify)",
+            optManual: "Specify Activity",
+            msgImagenDescargada: "¡Imagen descargada con éxito!"
+        }
+    };
+
+    function switchLanguage(lang) {
             currentLang = lang;
             
             const btnEs = document.getElementById('btn-lang-es');
@@ -619,10 +604,122 @@
             });
 
             updateSelectOptionsLabels();
-            syncPreview();
+            renderAllVouchers();
         }
 
-        function updateSelectOptionsLabels() {
+        function renderTabsBar() {
+        const bar = document.getElementById('tabs-reservas-bar');
+        bar.innerHTML = '';
+        for (let i = 0; i < totalReservasCount; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            const isActive = (i === activeReservaIndex);
+            btn.className = `px-3 py-1.5 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 ${
+                isActive 
+                    ? 'bg-zinc-900 text-white shadow-xs border border-zinc-800' 
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 border border-zinc-200/80'
+            }`;
+            btn.innerHTML = `<span>Reserva #${i+1}</span>`;
+            btn.onclick = () => selectTabReserva(i);
+            bar.appendChild(btn);
+        }
+    }
+
+    function changeCantidadReservas(count) {
+            totalReservasCount = count;
+            if (activeReservaIndex >= totalReservasCount) {
+                activeReservaIndex = totalReservasCount - 1;
+            }
+            renderTabsBar();
+            loadFormFromReservaData(activeReservaIndex);
+            renderAllVouchers();
+        }
+
+        function selectTabReserva(idx) {
+            saveCurrentFormToReservaData();
+            activeReservaIndex = idx;
+            renderTabsBar();
+            loadFormFromReservaData(idx);
+            renderAllVouchers();
+        }
+
+        function setCheckinPeriod(period) {
+            reservasData[activeReservaIndex].checkinPeriod = period;
+            updateCheckinPeriodButtons(period);
+            renderAllVouchers();
+        }
+
+        function updateCheckinPeriodButtons(period) {
+            const btnAm = document.getElementById('btn-period-am');
+            const btnPm = document.getElementById('btn-period-pm');
+            if (period === 'AM') {
+                btnAm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95";
+                btnPm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95";
+            } else {
+                btnPm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all bg-white text-zinc-900 shadow-xs active:scale-95";
+                btnAm.className = "px-2 py-1 text-xs font-bold rounded-lg transition-all text-zinc-500 hover:text-zinc-900 active:scale-95";
+            }
+        }
+
+        function saveCurrentFormToReservaData() {
+            const data = reservasData[activeReservaIndex];
+            data.nombreCliente = document.getElementById('nombreCliente').value;
+            data.telefono = document.getElementById('telefono').value;
+            data.hotel = document.getElementById('hotel').value;
+            data.actividad = document.getElementById('actividad').value;
+            data.otraActividad = document.getElementById('otraActividad').value;
+            data.fechaReserva = document.getElementById('fechaReserva').value;
+            data.fechaServicio = document.getElementById('fecha').value;
+            data.adultos = parseInt(document.getElementById('adultos').value) || 1;
+            data.menores = parseInt(document.getElementById('menores').value) || 0;
+            data.checkin = document.getElementById('checkin').value;
+            data.checkpoint = document.getElementById('checkpoint').value;
+            data.divisa = document.getElementById('divisa').value;
+            data.deposito = document.getElementById('deposito').value;
+            data.saldo = document.getElementById('saldo').value;
+            data.tipoCambio = document.getElementById('tipoCambio').value;
+            data.notas = document.getElementById('notas').value;
+
+            // If updating Reserva 1 (Base), propagate Name, Phone, Hotel to sub-reservations
+            if (activeReservaIndex === 0) {
+                for (let i = 1; i < 10; i++) {
+                    reservasData[i].nombreCliente = data.nombreCliente;
+                    reservasData[i].telefono = data.telefono;
+                    reservasData[i].hotel = data.hotel;
+                }
+            }
+        }
+
+        function loadFormFromReservaData(idx) {
+            const data = reservasData[idx];
+            document.getElementById('nombreCliente').value = data.nombreCliente || '';
+            document.getElementById('telefono').value = data.telefono || '';
+            document.getElementById('hotel').value = data.hotel || '';
+            
+            const actSel = document.getElementById('actividad');
+            actSel.value = data.actividad || '';
+            if (data.actividad && actSel.value !== data.actividad) {
+                actSel.value = "Otros";
+                document.getElementById('otraActividad').value = data.actividad;
+            } else {
+                document.getElementById('otraActividad').value = data.otraActividad || '';
+            }
+            
+            document.getElementById('fechaReserva').value = data.fechaReserva;
+            document.getElementById('fecha').value = data.fechaServicio;
+            document.getElementById('adultos').value = data.adultos;
+            document.getElementById('menores').value = data.menores;
+            document.getElementById('checkin').value = data.checkin;
+            updateCheckinPeriodButtons(data.checkinPeriod);
+            document.getElementById('checkpoint').value = data.checkpoint || '';
+            document.getElementById('divisa').value = data.divisa || 'MXN';
+            document.getElementById('deposito').value = data.deposito;
+            document.getElementById('saldo').value = data.saldo;
+            document.getElementById('tipoCambio').value = data.tipoCambio || '20.00';
+        document.getElementById('notas').value = data.notas || '';
+    }
+
+    function updateSelectOptionsLabels() {
             const aSel = document.getElementById('adultos');
             const currentAdultVal = aSel.value;
             aSel.innerHTML = '';
@@ -679,12 +776,10 @@
         }
 
         function initFormOptions() {
-            // Set static today's date for fechaReserva and default service date
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fechaReserva').value = today;
             document.getElementById('fecha').value = today;
 
-            // Generate 12-hour time options (HH:MM)
             const cSel = document.getElementById('checkin');
             cSel.innerHTML = '';
             const times = [];
@@ -712,6 +807,7 @@
             }
 
             updateSelectOptionsLabels();
+            renderTabsBar();
         }
 
         async function fetchActivities() {
@@ -773,248 +869,417 @@
             }
         }
 
-        function syncPreview() {
-            const cliente = document.getElementById('nombreCliente').value || '---';
-            const telefono = document.getElementById('telefono').value || '';
-            const hotel = document.getElementById('hotel').value || '---';
-            const actSel = document.getElementById('actividad').value;
-            const otraAct = document.getElementById('otraActividad').value;
-            const fechaReserva = document.getElementById('fechaReserva').value || '---';
-            const fechaServicio = document.getElementById('fecha').value || '---';
-            const adultos = parseInt(document.getElementById('adultos').value) || 1;
-            const menores = parseInt(document.getElementById('menores').value) || 0;
+        function renderAllVouchers() {
+            saveCurrentFormToReservaData();
+
+            // Filter active reservations based on totalReservasCount
+            let activeItems = reservasData.slice(0, totalReservasCount);
+
+            // Sort active items chronologically by Fecha del Servicio (fechaServicio)
+            activeItems.sort((a, b) => {
+                const fa = a.fechaServicio || '9999-99-99';
+                const fb = b.fechaServicio || '9999-99-99';
+                return fa.localeCompare(fb);
+            });
+
+            const listContainer = document.getElementById('vouchers-list-container');
+            listContainer.innerHTML = '';
+
+            activeItems.forEach((res, index) => {
+                const cardEl = createVoucherCardHtml(res, index + 1, activeItems.length);
+                listContainer.appendChild(cardEl);
+            });
+
+            // Update current tab form active state text balance total display
+            const currentData = reservasData[activeReservaIndex];
+            const currentDep = parseFloat(currentData.deposito) || 0;
+            const currentSal = parseFloat(currentData.saldo) || 0;
+            const currentTot = currentDep + currentSal;
+            const currentSym = getSimboloDivisa(currentData.divisa);
+            document.getElementById('txt-balance-total').textContent = `${currentSym}${currentTot.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${currentData.divisa}`;
+
+            // Handle Financial Summary Sheet (Render if totalReservasCount > 1)
+            const summaryWrapper = document.getElementById('summary-sheet-wrapper');
+            if (totalReservasCount > 1) {
+                summaryWrapper.classList.remove('hidden');
+                summaryWrapper.innerHTML = createFinancialSummarySheetHtml(activeItems);
+            } else {
+                summaryWrapper.classList.add('hidden');
+                summaryWrapper.innerHTML = '';
+            }
+        }
+
+        function createVoucherCardHtml(res, posIndex, totalCount) {
+            const cliente = res.nombreCliente || '---';
+            const telefono = res.telefono || '';
+            const hotel = res.hotel || '---';
+            const actSel = res.actividad;
+            const otraAct = res.otraActividad;
+            const fechaReserva = res.fechaReserva || '---';
+            const fechaServicio = res.fechaServicio || '---';
+            const adultos = res.adultos || 1;
+            const menores = res.menores || 0;
             const totalPax = adultos + menores;
-            const checkinTime = document.getElementById('checkin').value || '09:00';
-            const checkin = `${checkinTime} ${checkinPeriod}`;
-            const checkpoint = document.getElementById('checkpoint').value || '---';
+            const checkinTime = res.checkin || '09:00';
+            const checkin = `${checkinTime} ${res.checkinPeriod || 'AM'}`;
+            const checkpoint = res.checkpoint || '---';
             
-            // Clean parsing for empty deposit / balance fields
-            const depositoVal = document.getElementById('deposito').value;
-            const saldoVal = document.getElementById('saldo').value;
-            const deposito = parseFloat(depositoVal) || 0;
-            const saldo = parseFloat(saldoVal) || 0;
+            const deposito = parseFloat(res.deposito) || 0;
+            const saldo = parseFloat(res.saldo) || 0;
             const totalBalance = deposito + saldo;
-
-            const divisa = document.getElementById('divisa').value;
+            const divisa = res.divisa || 'MXN';
             const currSym = getSimboloDivisa(divisa);
-            const tc = parseFloat(document.getElementById('tipoCambio').value) || 20;
-            const notasTxt = document.getElementById('notas').value || '';
+            const tc = parseFloat(res.tipoCambio) || 20;
+            const notasTxt = res.notas || '';
 
-            document.getElementById('txt-balance-total').textContent = `${currSym}${totalBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}`;
-
-            if (actSel === "Otros") {
-                document.getElementById('otraActividad').classList.remove('hidden');
-            } else {
-                document.getElementById('otraActividad').classList.add('hidden');
-            }
             const actividadFinal = (actSel === "Otros") ? (otraAct || '---') : (actSel || '---');
-            document.getElementById('pv-actividad').textContent = actividadFinal;
 
-            const meta = window.catalogoActividades[actSel];
-            const pvFicha = document.getElementById('pv-fichaTecnica');
-            const wPies = document.getElementById('wrap-pv-pies');
-            const wCap = document.getElementById('wrap-pv-capacidad');
-            const wInc = document.getElementById('wrap-pv-incluye');
-
-            if (meta && actSel !== "Otros") {
-                let tieneFicha = false;
-                
-                if (meta.pies) {
-                    document.getElementById('pv-pies').textContent = meta.pies;
-                    wPies.classList.remove('hidden'); tieneFicha = true;
-                } else { wPies.classList.add('hidden'); }
-
-                if (meta.capacidad) {
-                    document.getElementById('pv-capacidad').textContent = meta.capacidad;
-                    wCap.classList.remove('hidden'); tieneFicha = true;
-                } else { wCap.classList.add('hidden'); }
-
-                if (meta.incluye) {
-                    document.getElementById('pv-incluye').textContent = meta.incluye;
-                    wInc.classList.remove('hidden'); tieneFicha = true;
-                } else { wInc.classList.add('hidden'); }
-
-                if (tieneFicha) { pvFicha.classList.remove('hidden'); } else { pvFicha.classList.add('hidden'); }
-
-            } else {
-                pvFicha.classList.add('hidden');
-            }
-
-            let txtEquiv = "---";
-            let txtPrevConv = "---";
-            if (saldo > 0) {
-                if (divisa === "USD" || divisa === "EUR") {
-                    let conv = saldo * tc;
-                    txtEquiv = `${conv.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})} MXN`;
-                    txtPrevConv = `$${txtEquiv}`;
-                } else {
-                    let conv = saldo / tc;
-                    txtEquiv = `${conv.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USD`;
-                    txtPrevConv = `$${txtEquiv}`;
-                }
-            }
-            document.getElementById('calculoConversion').textContent = txtEquiv;
-            document.getElementById('pv-conversion').textContent = txtPrevConv;
-
-            const wPvNotas = document.getElementById('wrap-pv-notas');
-            if (notasTxt.trim() !== "") {
-                document.getElementById('pv-notas').textContent = notasTxt;
-                wPvNotas.classList.remove('hidden');
-            } else {
-                wPvNotas.classList.add('hidden');
-            }
-
+            // Generate Confirmation Code
             let codigo = "ACT-XXXXXX-" + totalPax;
             if (fechaServicio !== '---') {
                 const p = fechaServicio.split('-');
                 codigo = `ACT-${p[0].substring(2)}${p[1]}${p[2]}-${totalPax}`;
             }
-            document.getElementById('confirmacion').value = codigo;
 
-            document.getElementById('pv-nombre').textContent = cliente;
-
-            const pvTel = document.getElementById('pv-telefono');
-            if (telefono.trim() !== "") {
-                pvTel.textContent = `📱 ${telefono}`;
-                pvTel.classList.remove('hidden');
-            } else {
-                pvTel.classList.add('hidden');
+            // Calculation reference string
+            let txtPrevConv = "---";
+            if (saldo > 0) {
+                if (divisa === "USD" || divisa === "EUR") {
+                    let conv = saldo * tc;
+                    txtPrevConv = `$${conv.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})} MXN`;
+                } else {
+                    let conv = saldo / tc;
+                    txtPrevConv = `$${conv.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USD`;
+                }
             }
 
-            document.getElementById('pv-hotel').textContent = hotel;
-            document.getElementById('pv-fecha-reserva').textContent = formatarFecha(fechaReserva, currentLang);
-            document.getElementById('pv-fecha').textContent = formatarFecha(fechaServicio, currentLang);
-            
+            const meta = window.catalogoActividades[actSel];
+            let fichaHtml = '';
+            if (meta && actSel !== "Otros") {
+                let piesSpan = meta.pies ? `<div class="min-w-0"><span data-i18n="pvDimension" class="text-[9px] uppercase font-extrabold text-zinc-400 block">${dictionary[currentLang].pvDimension}</span><span class="font-bold text-zinc-800 break-words text-xs">${meta.pies}</span></div>` : '';
+                let capSpan = meta.capacidad ? `<div class="min-w-0"><span data-i18n="pvCapacidad" class="text-[9px] uppercase font-extrabold text-zinc-400 block">${dictionary[currentLang].pvCapacidad}</span><span class="font-bold text-zinc-800 break-words text-xs">${meta.capacidad}</span></div>` : '';
+                let incP = meta.incluye ? `<div class="min-w-0"><span data-i18n="pvIncluye" class="text-[9px] uppercase font-extrabold text-zinc-400 block mb-0.5">${dictionary[currentLang].pvIncluye}</span><p class="text-zinc-700 leading-relaxed text-[11px] font-medium break-words">${meta.incluye}</p></div>` : '';
+
+                if (piesSpan || capSpan || incP) {
+                    fichaHtml = `
+                    <div class="p-3 bg-zinc-50/90 rounded-xl border border-zinc-200/70 text-xs space-y-2">
+                        ${(piesSpan || capSpan) ? `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-zinc-200/80 pb-2">${piesSpan}${capSpan}</div>` : ''}
+                        ${incP}
+                    </div>`;
+                }
+            }
+
+            const notasHtml = notasTxt.trim() !== '' ? `
+                <div class="bg-amber-50/80 border border-amber-200/90 p-2.5 rounded-xl min-w-0">
+                    <p data-i18n="pvNotasObs" class="text-[10px] font-extrabold uppercase tracking-wider text-amber-900 mb-0.5">${dictionary[currentLang].pvNotasObs}</p>
+                    <p class="text-xs text-zinc-800 font-medium italic whitespace-pre-line break-words">${notasTxt}</p>
+                </div>
+            ` : '';
+
             let txtDistribucion = `${adultos} ${(adultos === 1 ? dictionary[currentLang].optAdult : dictionary[currentLang].optAdults)}`;
             if (menores > 0) {
                 txtDistribucion += ` / ${menores} ${(menores === 1 ? dictionary[currentLang].optChild : dictionary[currentLang].optChildren)}`;
             }
-            document.getElementById('pv-personas').textContent = txtDistribucion;
-            
-            document.getElementById('pv-checkin').textContent = checkin;
-            document.getElementById('pv-checkpoint').textContent = checkpoint;
 
-            document.getElementById('pv-deposito').textContent = `${currSym}${deposito.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}`;
-            document.getElementById('pv-saldo').textContent = `${currSym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}`;
-            document.getElementById('pv-total').textContent = `${currSym}${totalBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}`;
-            document.getElementById('pv-balance').textContent = `${currSym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}`;
-            
-            document.getElementById('pv-confirmacion').textContent = codigo;
+            const finalUrl = obtenerUrlVoucher();
+            const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(finalUrl)}`;
 
-            actualizarQR(cliente, telefono, hotel, actSel, otraAct, fechaReserva, fechaServicio, adultos, menores, checkin, checkpoint, deposito, saldo, divisa, tc, notasTxt);
+            const card = document.createElement('div');
+        card.className = "voucher-card-item bg-white p-4 sm:p-6 md:p-7 rounded-2xl border border-zinc-200/90 shadow-sm print-card flex flex-col justify-between overflow-hidden relative";
+        card.innerHTML = `
+            <div>
+                <!-- Voucher Header -->
+                <div class="border-b border-zinc-200 pb-3 mb-3.5 pt-0.5">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-[9px] font-extrabold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded border border-zinc-200/80 flex-shrink-0">
+                                ${dictionary[currentLang].pvServiceIndex} ${posIndex} ${dictionary[currentLang].pvOf} ${totalCount}
+                            </span>
+                            <div class="flex items-center gap-1 min-w-0">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0"></span>
+                                <p data-i18n="pvSubTitle" class="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-zinc-400 leading-none truncate">${dictionary[currentLang].pvSubTitle}</p>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center justify-center bg-zinc-900 text-zinc-100 font-mono text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-lg border border-zinc-700/80 shadow-2xs tracking-wider">
+                                ${codigo}
+                            </span>
+                        </div>
+                    </div>
+                    <h1 data-i18n="pvMainTitle" class="text-lg sm:text-2xl font-black tracking-tight text-zinc-950 uppercase leading-tight mt-1.5">${dictionary[currentLang].pvMainTitle}</h1>
+                </div>
+
+                <div class="space-y-3">
+                    
+                    <!-- Guest & Hotel Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-zinc-50/80 p-2.5 rounded-xl border border-zinc-200/60">
+                        <div class="min-w-0">
+                            <p data-i18n="pvPasajero" class="text-[9px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvPasajero}</p>
+                            <p class="text-xs sm:text-sm font-extrabold text-zinc-950 break-words">${cliente}</p>
+                            ${telefono ? `<p class="text-[11px] text-zinc-600 font-semibold break-words mt-0.5">📱 ${telefono}</p>` : ''}
+                        </div>
+                        <div class="min-w-0">
+                            <p data-i18n="pvHotelLabel" class="text-[9px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvHotelLabel}</p>
+                            <p class="text-xs sm:text-sm font-extrabold text-zinc-950 break-words">${hotel}</p>
+                        </div>
+                    </div>
+
+                    <!-- Booked Activity Section -->
+                    <div class="min-w-0 pt-0.5 px-0.5">
+                        <p data-i18n="pvActividadContratada" class="text-[9px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvActividadContratada}</p>
+                        <p class="text-sm sm:text-base font-black text-zinc-950 break-words">${actividadFinal}</p>
+                    </div>
+
+                    ${fichaHtml}
+
+                    <div class="grid grid-cols-3 gap-2 border-t border-zinc-200/80 pt-2.5">
+                        <div class="min-w-0">
+                            <p data-i18n="pvFechaReservaLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvFechaReservaLbl}</p>
+                            <p class="text-xs font-bold text-zinc-900 leading-snug break-words">${formatarFecha(fechaReserva, currentLang)}</p>
+                        </div>
+                        <div class="min-w-0">
+                            <p data-i18n="pvFechaServicioLbl" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvFechaServicioLbl}</p>
+                            <p class="text-xs font-bold text-zinc-950 leading-snug break-words">${formatarFecha(fechaServicio, currentLang)}</p>
+                        </div>
+                        <div class="min-w-0">
+                            <p data-i18n="pvDistribucion" class="text-[9px] font-extrabold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvDistribucion}</p>
+                            <p class="text-xs font-bold text-zinc-900 leading-snug break-words">${txtDistribucion}</p>
+                        </div>
+                    </div>
+
+                    <!-- Checkin & Meeting Point grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-zinc-200/80 pb-2.5">
+                        <div class="min-w-0">
+                            <p data-i18n="pvHorario" class="text-[9px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvHorario}</p>
+                            <p class="text-xs font-extrabold text-zinc-950 leading-snug">${checkin}</p>
+                        </div>
+                        <div class="sm:col-span-2 min-w-0">
+                            <p data-i18n="pvPuntoEncuentro" class="text-[9px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5">${dictionary[currentLang].pvPuntoEncuentro}</p>
+                            <p class="text-xs font-extrabold text-zinc-950 leading-snug break-words">${checkpoint}</p>
+                        </div>
+                    </div>
+
+                    <!-- Executive Payment Details Banner -->
+                    <div class="bg-zinc-900 text-white p-3 rounded-xl border border-zinc-800 space-y-2 shadow-2xs">
+                        <div class="grid grid-cols-3 gap-2 border-b border-zinc-800 pb-2 text-left min-w-0">
+                            <div class="min-w-0">
+                                <p data-i18n="pvDepositoLbl" class="text-[8px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">${dictionary[currentLang].pvDepositoLbl}</p>
+                                <p class="text-xs sm:text-sm font-black text-emerald-400 whitespace-nowrap">${currSym}${deposito.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</p>
+                            </div>
+                            <div class="min-w-0">
+                                <p data-i18n="pvSaldoLbl" class="text-[8px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">${dictionary[currentLang].pvSaldoLbl}</p>
+                                <p class="text-xs sm:text-sm font-black text-amber-400 whitespace-nowrap">${currSym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</p>
+                            </div>
+                            <div class="text-right min-w-0">
+                                <p data-i18n="pvTotalLbl" class="text-[8px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">${dictionary[currentLang].pvTotalLbl}</p>
+                                <p class="text-xs sm:text-sm font-black text-white whitespace-nowrap">${currSym}${totalBalance.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-row justify-between items-center gap-2 pt-0.5 min-w-0">
+                            <div class="min-w-0">
+                                <p data-i18n="pvBalancePagar" class="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">${dictionary[currentLang].pvBalancePagar}</p>
+                                <p class="text-xs sm:text-base font-black tracking-tight text-white whitespace-nowrap">${currSym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</p>
+                            </div>
+                            <div class="text-right border-l border-zinc-800 pl-3 min-w-0 flex-shrink-0">
+                                <p data-i18n="pvConversionRef" class="text-[8px] font-bold uppercase tracking-wider text-zinc-400 whitespace-nowrap">${dictionary[currentLang].pvConversionRef}</p>
+                                <p class="text-[11px] sm:text-xs font-mono font-bold text-zinc-300 whitespace-nowrap">${txtPrevConv}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${notasHtml}
+                </div>
+            </div>
+
+            <div class="mt-3 border-t border-zinc-200/90 pt-2.5 flex flex-row justify-between items-center gap-3">
+                <div class="text-left text-[10px] text-zinc-500 w-full max-w-[70%]">
+                    <p data-i18n="footerCompany" class="font-extrabold text-zinc-800 text-[10px] sm:text-[11px] mb-0.5">${dictionary[currentLang].footerCompany}</p>
+                    <div class="my-0.5">
+                        <p data-i18n="footerPoliciesTitle" class="font-bold text-zinc-700 text-[8px] uppercase tracking-wider">${dictionary[currentLang].footerPoliciesTitle}</p>
+                        <p data-i18n="footerPoliciesText" class="font-semibold text-zinc-900 text-[8px] leading-tight">${dictionary[currentLang].footerPoliciesText}</p>
+                    </div>
+                    <p data-i18n="footerLocation" class="font-medium text-zinc-500 text-[8px]">${dictionary[currentLang].footerLocation}</p>
+                    <p data-i18n="footerDisclaimer" class="mt-0.5 text-[8px] text-zinc-400 italic leading-tight">${dictionary[currentLang].footerDisclaimer}</p>
+                </div>
+                <div class="text-center flex flex-col items-center flex-shrink-0">
+                    <img src="${qrSrc}" alt="QR" class="w-[72px] h-[72px] sm:w-[78px] sm:h-[78px] border border-zinc-200/90 p-1 rounded-xl bg-white shadow-2xs">
+                    <span data-i18n="pvValidarReserva" class="text-[8px] font-mono font-bold text-zinc-400 mt-0.5 uppercase tracking-wider">${dictionary[currentLang].pvValidarReserva}</span>
+                </div>
+            </div>
+        `;
+        return card;
+    }
+
+    function createFinancialSummarySheetHtml(sortedItems) {
+        const primary = sortedItems[0] || {};
+        const cliente = primary.nombreCliente || '---';
+        const telefono = primary.telefono || '';
+        const hotel = primary.hotel || '---';
+
+        let totalDepositos = 0;
+        let totalSaldos = 0;
+        let granTotal = 0;
+
+        let tableRows = sortedItems.map((item, idx) => {
+            const deposito = parseFloat(item.deposito) || 0;
+            const saldo = parseFloat(item.saldo) || 0;
+            const total = deposito + saldo;
+            const divisa = item.divisa || 'MXN';
+            const sym = getSimboloDivisa(divisa);
+
+            totalDepositos += deposito;
+            totalSaldos += saldo;
+            granTotal += total;
+
+            const actName = (item.actividad === 'Otros') ? (item.otraActividad || '---') : (item.actividad || '---');
+            const fechaServ = item.fechaServicio || '---';
+            const adultos = item.adultos || 1;
+            const menores = item.menores || 0;
+            const totalPax = adultos + menores;
+
+            let codigo = "ACT-XXXXXX-" + totalPax;
+            if (fechaServ !== '---') {
+                const p = fechaServ.split('-');
+                codigo = `ACT-${p[0].substring(2)}${p[1]}${p[2]}-${totalPax}`;
+            }
+
+            return `
+                <tr class="border-b border-zinc-200 text-xs text-zinc-800 ${idx % 2 === 0 ? 'bg-zinc-50/50' : 'bg-white'}">
+                    <td class="p-2.5 font-mono font-bold text-zinc-900">${codigo}</td>
+                    <td class="p-2.5 font-medium">${formatarFecha(fechaServ, currentLang)}</td>
+                    <td class="p-2.5 font-bold text-zinc-950">${actName}</td>
+                    <td class="p-2.5 text-center font-medium">${totalPax} PAX</td>
+                    <td class="p-2.5 text-right font-bold text-emerald-600">${sym}${deposito.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
+                    <td class="p-2.5 text-right font-bold text-amber-600">${sym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
+                    <td class="p-2.5 text-right font-black text-zinc-900">${sym}${total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const mainDivisa = primary.divisa || 'MXN';
+        const mainSym = getSimboloDivisa(mainDivisa);
+        const tc = parseFloat(primary.tipoCambio) || 20;
+
+        let refConvStr = "---";
+        if (totalSaldos > 0) {
+            if (mainDivisa === "USD" || mainDivisa === "EUR") {
+                let conv = totalSaldos * tc;
+                refConvStr = `$${conv.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})} MXN`;
+            } else {
+                let conv = totalSaldos / tc;
+                refConvStr = `$${conv.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USD`;
+            }
         }
 
-        function obtenerUrlVoucher() {
-            const cliente = document.getElementById('nombreCliente').value;
-            const telefono = document.getElementById('telefono').value;
-            const hotel = document.getElementById('hotel').value;
-            const actSel = document.getElementById('actividad').value;
-            const otraAct = document.getElementById('otraActividad').value;
-            const fechaReserva = document.getElementById('fechaReserva').value;
-            const fechaServicio = document.getElementById('fecha').value;
-            const adultos = document.getElementById('adultos').value;
-            const menores = document.getElementById('menores').value;
-            const checkinTime = document.getElementById('checkin').value;
-            const checkin = `${checkinTime} ${checkinPeriod}`;
-            const checkpoint = document.getElementById('checkpoint').value;
-            const deposito = document.getElementById('deposito').value;
-            const saldo = document.getElementById('saldo').value;
-            const divisa = document.getElementById('divisa').value;
-            const tc = document.getElementById('tipoCambio').value;
-            const notasTxt = document.getElementById('notas').value;
+        return `
+            <div class="summary-sheet-item bg-white p-5 sm:p-7 rounded-2xl border-2 border-zinc-900 shadow-lg print-card space-y-3.5">
+                <!-- Summary Sheet Header -->
+                <div class="border-b-2 border-zinc-900 pb-3 text-center">
+                    <h2 class="text-xl sm:text-2xl font-black text-zinc-950 uppercase tracking-tight">${dictionary[currentLang].summaryTitle}</h2>
+                </div>
 
+                <!-- Client Specs Header -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-100 p-3 rounded-xl border border-zinc-300 text-xs">
+                    <div>
+                        <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryClientHeader}</span>
+                        <span class="font-extrabold text-sm text-zinc-950">${cliente}</span>
+                        ${telefono ? `<span class="block text-zinc-600 font-semibold text-xs">📱 ${telefono}</span>` : ''}
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].pvHotelLabel}</span>
+                        <span class="font-extrabold text-sm text-zinc-950">${hotel}</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalBookings}</span>
+                        <span class="font-extrabold text-sm text-emerald-700">${sortedItems.length} ${dictionary[currentLang].summaryConfirmedCount}</span>
+                    </div>
+                </div>
+
+                <!-- Detailed Accounting Table -->
+                <div class="overflow-x-auto border border-zinc-300 rounded-xl">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="bg-zinc-900 text-white text-[10px] font-extrabold uppercase tracking-wider">
+                                <th class="p-2.5">${dictionary[currentLang].summaryTableCode}</th>
+                                <th class="p-2.5">${dictionary[currentLang].summaryTableDate}</th>
+                                <th class="p-2.5">${dictionary[currentLang].summaryTableActivity}</th>
+                                <th class="p-2.5 text-center">${dictionary[currentLang].summaryTablePax}</th>
+                                <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableDeposit}</th>
+                                <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableBalance}</th>
+                                <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableTotal}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Grand Totals Banner -->
+                <div class="bg-zinc-950 text-white p-3.5 rounded-xl border border-zinc-800 space-y-2.5">
+                    <div class="grid grid-cols-3 gap-3 border-b border-zinc-800 pb-2 text-center">
+                        <div>
+                            <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalDeposits}</span>
+                            <span class="text-sm sm:text-base font-black text-emerald-400">${mainSym}${totalDepositos.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalBalances}</span>
+                            <span class="text-sm sm:text-base font-black text-amber-400">${mainSym}${totalSaldos.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryGrandTotal}</span>
+                            <span class="text-sm sm:text-base font-black text-white">${mainSym}${granTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs text-zinc-300 pt-0.5">
+                        <span class="font-medium">${dictionary[currentLang].summaryRefConversion}</span>
+                        <span class="font-mono font-bold text-xs sm:text-sm text-zinc-100">${refConvStr}</span>
+                    </div>
+                </div>
+
+                <div class="text-center text-[9px] text-zinc-400 italic pt-1">
+                    ${dictionary[currentLang].summaryFooterNote}
+                </div>
+            </div>
+        `;
+    }
+
+    function obtenerUrlVoucher() {
+            saveCurrentFormToReservaData();
             const baseUrl = window.location.origin + window.location.pathname;
             const q = new URLSearchParams();
-            if(cliente && cliente!=='---') q.append('n', cliente);
-            if(telefono) q.append('p', telefono);
-            if(hotel && hotel!=='---') q.append('h', hotel);
-            if(actSel) q.append('a', actSel);
-            if(actSel==='Otros' && otraAct) q.append('oa', otraAct);
-            if(fechaReserva && fechaReserva!=='---') q.append('fr', fechaReserva);
-            if(fechaServicio && fechaServicio!=='---') q.append('f', fechaServicio);
-            if(adultos) q.append('ad', adultos);
-            if(menores) q.append('mn', menores);
-            if(checkin) q.append('ci', checkin);
-            if(checkpoint && checkpoint!=='---') q.append('cp', checkpoint);
-            if(deposito) q.append('dep', deposito);
-            if(saldo) q.append('sal', saldo);
-            if(divisa) q.append('d', divisa);
-            if(tc) q.append('tc', tc);
-            if(notasTxt && notasTxt.trim() !== '') q.append('no', notasTxt);
+            
+            q.append('count', totalReservasCount);
+            
+            // Encode primary contact
+            const primary = reservasData[0];
+            if(primary.nombreCliente) q.append('n', primary.nombreCliente);
+            if(primary.telefono) q.append('p', primary.telefono);
+            if(primary.hotel) q.append('h', primary.hotel);
+
+            // Encode all active reservations
+            for (let i = 0; i < totalReservasCount; i++) {
+                const res = reservasData[i];
+                q.append(`a_${i}`, res.actividad || '');
+                if (res.actividad === 'Otros') q.append(`oa_${i}`, res.otraActividad || '');
+                q.append(`f_${i}`, res.fechaServicio || '');
+                q.append(`ad_${i}`, res.adultos || 1);
+                q.append(`mn_${i}`, res.menores || 0);
+                q.append(`ci_${i}`, `${res.checkin || '09:00'} ${res.checkinPeriod || 'AM'}`);
+                q.append(`cp_${i}`, res.checkpoint || '');
+                q.append(`dep_${i}`, res.deposito || 0);
+                q.append(`sal_${i}`, res.saldo || 0);
+                q.append(`d_${i}`, res.divisa || 'MXN');
+                q.append(`tc_${i}`, res.tipoCambio || 20);
+                if (res.notas) q.append(`no_${i}`, res.notas);
+            }
+
             q.append('lang', currentLang);
             q.append('view', 'voucher');
 
             return `${baseUrl}?${q.toString()}`;
-        }
-
-        function generarResumenWhatsApp() {
-            const codigo = document.getElementById('confirmacion').value || 'Voucher';
-            const cliente = document.getElementById('pv-nombre').textContent;
-            const telefono = document.getElementById('telefono').value;
-            const hotel = document.getElementById('pv-hotel').textContent;
-            const actividad = document.getElementById('pv-actividad').textContent;
-            const fechaServicio = document.getElementById('pv-fecha').textContent;
-            const personas = document.getElementById('pv-personas').textContent;
-            const checkin = document.getElementById('pv-checkin').textContent;
-            const checkpoint = document.getElementById('pv-checkpoint').textContent;
-            const deposito = document.getElementById('pv-deposito').textContent;
-            const saldo = document.getElementById('pv-saldo').textContent;
-            const total = document.getElementById('pv-total').textContent;
-            const notas = document.getElementById('notas').value.trim();
-            const urlVoucher = obtenerUrlVoucher();
-
-            if (currentLang === 'en') {
-                let msg = `📄 *BOOKING CONFIRMATION*\n`;
-                msg += `*Code:* ${codigo}\n`;
-                msg += `----------------------------------\n`;
-                msg += `👤 *Primary Guest:* ${cliente}\n`;
-                if (telefono) msg += `📞 *Phone:* ${telefono}\n`;
-                msg += `🏨 *Hotel / Lodging:* ${hotel}\n`;
-                msg += `⛵ *Activity:* ${actividad}\n`;
-                msg += `📅 *Service Date:* ${fechaServicio}\n`;
-                msg += `👥 *Guests:* ${personas}\n`;
-                msg += `⏰ *Check-in Time:* ${checkin}\n`;
-                msg += `📍 *Meeting Point:* ${checkpoint}\n`;
-                msg += `----------------------------------\n`;
-                msg += `💰 *Deposit Paid:* ${deposito}\n`;
-                msg += `💵 *Balance Due:* ${saldo}\n`;
-                msg += `💳 *Total Price:* ${total}\n`;
-                if (notas) {
-                    msg += `----------------------------------\n`;
-                    msg += `📝 *Notes:* ${notas}\n`;
-                }
-                msg += `----------------------------------\n`;
-                msg += `🔗 *View Voucher Online:* \n${urlVoucher}`;
-                return msg;
-            } else {
-                let msg = `📄 *CONFIRMACIÓN DE RESERVA*\n`;
-                msg += `*Código:* ${codigo}\n`;
-                msg += `----------------------------------\n`;
-                msg += `👤 *Cliente:* ${cliente}\n`;
-                if (telefono) msg += `📞 *Teléfono:* ${telefono}\n`;
-                msg += `🏨 *Hotel / Hospedaje:* ${hotel}\n`;
-                msg += `⛵ *Actividad:* ${actividad}\n`;
-                msg += `📅 *Fecha del Servicio:* ${fechaServicio}\n`;
-                msg += `👥 *Pasajeros:* ${personas}\n`;
-                msg += `⏰ *Horario Check-in:* ${checkin}\n`;
-                msg += `📍 *Punto de Encuentro:* ${checkpoint}\n`;
-                msg += `----------------------------------\n`;
-                msg += `💰 *Depósito Pagado:* ${deposito}\n`;
-                msg += `💵 *Saldo Pendiente:* ${saldo}\n`;
-                msg += `💳 *Total Reserva:* ${total}\n`;
-                if (notas) {
-                    msg += `----------------------------------\n`;
-                    msg += `📝 *Notas:* ${notas}\n`;
-                }
-                msg += `----------------------------------\n`;
-                msg += `🔗 *Ver Voucher en línea:* \n${urlVoucher}`;
-                return msg;
-            }
-        }
-
-        function actualizarQR(n, p, h, a, oa, fr, f, ad, mn, ci, cp, dep, sal, d, tc, no) {
-            const finalUrl = obtenerUrlVoucher();
-            document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(finalUrl)}`;
         }
 
         function loadFromUrlQuery() {
@@ -1022,55 +1287,58 @@
             if (q.toString() === "") return;
 
             if (q.has('lang')) switchLanguage(q.get('lang'));
-            if (q.has('n')) document.getElementById('nombreCliente').value = q.get('n');
-            if (q.has('p')) document.getElementById('telefono').value = q.get('p');
-            if (q.has('h')) document.getElementById('hotel').value = q.get('h');
-            if (q.has('fr')) document.getElementById('fechaReserva').value = q.get('fr');
-            if (q.has('f')) document.getElementById('fecha').value = q.get('f');
-            if (q.has('ad')) document.getElementById('adultos').value = q.get('ad');
-            if (q.has('mn')) document.getElementById('menores').value = q.get('mn');
-            
-            if (q.has('ci')) {
-                const ciVal = q.get('ci');
-                const parts = ciVal.split(' ');
-                if (parts.length === 2) {
-                    document.getElementById('checkin').value = parts[0];
-                    setCheckinPeriod(parts[1]);
-                } else {
-                    document.getElementById('checkin').value = ciVal;
-                }
+            if (q.has('count')) {
+                totalReservasCount = Math.min(10, Math.max(1, parseInt(q.get('count')) || 1));
+                document.getElementById('select-cant-reservas').value = totalReservasCount;
             }
 
-            if (q.has('cp')) document.getElementById('checkpoint').value = q.get('cp');
-            
-            if (q.has('dep')) document.getElementById('deposito').value = q.get('dep');
-            if (q.has('sal')) document.getElementById('saldo').value = q.get('sal');
-            if (!q.has('sal') && q.has('b')) document.getElementById('saldo').value = q.get('b');
+            const primaryName = q.get('n') || '';
+            const primaryPhone = q.get('p') || '';
+            const primaryHotel = q.get('h') || '';
 
-            if (q.has('d')) document.getElementById('divisa').value = q.get('d');
-            if (q.has('tc')) document.getElementById('tipoCambio').value = q.get('tc');
-            if (q.has('no')) document.getElementById('notas').value = q.get('no');
-            
-            if (q.has('a')) {
-                const sel = document.getElementById('actividad');
-                sel.value = q.get('a');
-                if (sel.value !== q.get('a')) {
-                    sel.value = "Otros";
-                    document.getElementById('otraActividad').value = q.get('a');
+            for (let i = 0; i < totalReservasCount; i++) {
+                const res = reservasData[i];
+                res.nombreCliente = primaryName;
+                res.telefono = primaryPhone;
+                res.hotel = primaryHotel;
+
+                if (q.has(`a_${i}`)) res.actividad = q.get(`a_${i}`);
+                if (q.has(`oa_${i}`)) res.otraActividad = q.get(`oa_${i}`);
+                if (q.has(`f_${i}`)) res.fechaServicio = q.get(`f_${i}`);
+                if (q.has(`ad_${i}`)) res.adultos = parseInt(q.get(`ad_${i}`)) || 1;
+                if (q.has(`mn_${i}`)) res.menores = parseInt(q.get(`mn_${i}`)) || 0;
+
+                if (q.has(`ci_${i}`)) {
+                    const ciVal = q.get(`ci_${i}`);
+                    const parts = ciVal.split(' ');
+                    if (parts.length === 2) {
+                        res.checkin = parts[0];
+                        res.checkinPeriod = parts[1];
+                    } else {
+                        res.checkin = ciVal;
+                    }
                 }
-            }
-            if (q.has('oa')) document.getElementById('otraActividad').value = q.get('oa');
 
-            syncPreview();
+                if (q.has(`cp_${i}`)) res.checkpoint = q.get(`cp_${i}`);
+                if (q.has(`dep_${i}`)) res.deposito = q.get(`dep_${i}`);
+                if (q.has(`sal_${i}`)) res.saldo = q.get(`sal_${i}`);
+                if (q.has(`d_${i}`)) res.divisa = q.get(`d_${i}`);
+                if (q.has(`tc_${i}`)) res.tipoCambio = q.get(`tc_${i}`);
+                if (q.has(`no_${i}`)) res.notas = q.get(`no_${i}`);
+            }
+
+            renderTabsBar();
+            loadFormFromReservaData(0);
+            renderAllVouchers();
 
             if (q.get('view') === 'voucher') {
                 const formCol = document.getElementById('form-container');
-                const voucherCol = document.getElementById('voucher-preview');
+                const voucherWrapper = document.getElementById('vouchers-main-wrapper');
                 
                 if (formCol) formCol.remove();
-                if (voucherCol) {
-                    voucherCol.classList.remove('lg:col-span-7');
-                    voucherCol.classList.add('lg:col-span-12', 'max-w-2xl', 'mx-auto', 'my-2');
+                if (voucherWrapper) {
+                    voucherWrapper.classList.remove('lg:col-span-7');
+                    voucherWrapper.classList.add('lg:col-span-12', 'max-w-3xl', 'mx-auto', 'my-2');
                 }
             }
         }
@@ -1090,86 +1358,32 @@
             }, 4500);
         }
 
-        async function compartirOEnviarImagenWhatsApp(canvas) {
-            const telefonoWA = "5219981153503";
-            const codigo = document.getElementById('confirmacion').value || 'Voucher';
-            const textoMensaje = generarResumenWhatsApp();
-            
-            canvas.toBlob(async (blob) => {
-                if (!blob) return;
-                const file = new File([blob], `${codigo}.png`, { type: 'image/png' });
-
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: `Voucher ${codigo}`,
-                            text: textoMensaje
-                        });
-                        return;
-                    } catch (err) {
-                        console.log('Compartir nativo cancelado o no soportado:', err);
-                    }
-                }
-
-                let copiado = false;
-                try {
-                    if (navigator.clipboard && window.ClipboardItem) {
-                        const item = new ClipboardItem({ 'image/png': blob });
-                        await navigator.clipboard.write([item]);
-                        copiado = true;
-                    }
-                } catch (err) {
-                    console.log('Error copiando imagen al portapapeles:', err);
-                }
-
-                if (copiado) {
-                    mostrarToast(dictionary[currentLang].msgCopiado || "¡Imagen copiada! Pégala (Ctrl+V) en el chat de WhatsApp.");
-                }
-
-                const waUrl = `https://api.whatsapp.com/send?phone=${telefonoWA}&text=${encodeURIComponent(textoMensaje)}`;
-                window.open(waUrl, '_blank');
-            }, 'image/png');
-        }
-
         function imprimirVoucher() {
             window.print();
         }
 
         function exportarVoucherAImagen() {
-            const target = document.getElementById('voucher-preview');
-            const codigoConfirmacion = document.getElementById('confirmacion').value || 'voucher';
+            saveCurrentFormToReservaData();
+            const target = document.getElementById('vouchers-main-wrapper');
             
             const posicionScrollOriginal = window.scrollY;
             window.scrollTo(0, 0);
 
-            // High-definition render configuration with onclone layout lock
             const opciones = {
                 useCORS: true, 
-                scale: 3, 
-                backgroundColor: '#ffffff',
+                scale: 2.5, 
+                backgroundColor: '#f4f4f5',
                 scrollX: 0,
                 scrollY: 0,
                 logging: false,
                 onclone: (clonedDoc) => {
-                    const clonedTarget = clonedDoc.getElementById('voucher-preview');
+                    const clonedTarget = clonedDoc.getElementById('vouchers-main-wrapper');
                     if (clonedTarget) {
-                        clonedTarget.style.width = '700px';
-                        clonedTarget.style.maxWidth = '700px';
-                        clonedTarget.style.height = 'auto';
-                        clonedTarget.style.minHeight = 'auto';
+                        clonedTarget.style.width = '720px';
+                        clonedTarget.style.maxWidth = '720px';
                         clonedTarget.style.margin = '0 auto';
-                        clonedTarget.style.padding = '26px';
+                        clonedTarget.style.padding = '20px';
                         clonedTarget.style.boxSizing = 'border-box';
-                        clonedTarget.style.overflow = 'visible';
-
-                        // Strip truncate constraints on clone so text never gets clipped vertically or horizontally
-                        const truncatedEls = clonedTarget.querySelectorAll('.truncate');
-                        truncatedEls.forEach(el => {
-                            el.classList.remove('truncate');
-                            el.style.overflow = 'visible';
-                            el.style.whiteSpace = 'normal';
-                        });
                     }
                 }
             };
@@ -1177,15 +1391,12 @@
             setTimeout(() => {
                 html2canvas(target, opciones).then(canvas => {
                     const enlace = document.createElement('a');
-                    enlace.download = `${codigoConfirmacion}.png`;
+                    enlace.download = `Vouchers_Reserva.png`;
                     enlace.href = canvas.toDataURL('image/png');
                     enlace.click();
                     
                     window.scrollTo(0, posicionScrollOriginal);
-                    
-                    setTimeout(() => {
-                        compartirOEnviarImagenWhatsApp(canvas);
-                    }, 400);
+                    mostrarToast(dictionary[currentLang].msgImagenDescargada || "¡Imagen descargada con éxito!");
                 }).catch(err => {
                     console.error("Error procesando la captura de imagen:", err);
                     window.scrollTo(0, posicionScrollOriginal);
@@ -1193,13 +1404,15 @@
             }, 100);
         }
 
-        document.getElementById('reserveForm').addEventListener('input', syncPreview);
-        document.getElementById('actividad').addEventListener('change', syncPreview);
-        document.getElementById('adultos').addEventListener('change', syncPreview);
-        document.getElementById('menores').addEventListener('change', syncPreview);
-        document.getElementById('checkin').addEventListener('change', syncPreview);
-        document.getElementById('divisa').addEventListener('change', syncPreview);
-        document.getElementById('tipoCambio').addEventListener('change', syncPreview);
+        // Attach event listeners for real-time synchronization
+        const inputsToSync = ['nombreCliente', 'telefono', 'hotel', 'actividad', 'otraActividad', 'fecha', 'adultos', 'menores', 'checkin', 'checkpoint', 'deposito', 'saldo', 'divisa', 'tipoCambio', 'notas'];
+        inputsToSync.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', renderAllVouchers);
+                el.addEventListener('change', renderAllVouchers);
+            }
+        });
 
         // Run initializers
         initFormOptions();
