@@ -1284,63 +1284,63 @@
 
         function loadFromUrlQuery() {
             const q = new URLSearchParams(window.location.search);
-            if (q.toString() === "") return;
-
-            if (q.has('lang')) switchLanguage(q.get('lang'));
-            if (q.has('count')) {
-                totalReservasCount = Math.min(10, Math.max(1, parseInt(q.get('count')) || 1));
-                document.getElementById('select-cant-reservas').value = totalReservasCount;
-            }
-
-            const primaryName = q.get('n') || '';
-            const primaryPhone = q.get('p') || '';
-            const primaryHotel = q.get('h') || '';
-
-            for (let i = 0; i < totalReservasCount; i++) {
-                const res = reservasData[i];
-                res.nombreCliente = primaryName;
-                res.telefono = primaryPhone;
-                res.hotel = primaryHotel;
-
-                if (q.has(`a_${i}`)) res.actividad = q.get(`a_${i}`);
-                if (q.has(`oa_${i}`)) res.otraActividad = q.get(`oa_${i}`);
-                if (q.has(`f_${i}`)) res.fechaServicio = q.get(`f_${i}`);
-                if (q.has(`ad_${i}`)) res.adultos = parseInt(q.get(`ad_${i}`)) || 1;
-                if (q.has(`mn_${i}`)) res.menores = parseInt(q.get(`mn_${i}`)) || 0;
-
-                if (q.has(`ci_${i}`)) {
-                    const ciVal = q.get(`ci_${i}`);
-                    const parts = ciVal.split(' ');
-                    if (parts.length === 2) {
-                        res.checkin = parts[0];
-                        res.checkinPeriod = parts[1];
-                    } else {
-                        res.checkin = ciVal;
-                    }
+            if (q.toString() !== "") {
+                if (q.has('lang')) switchLanguage(q.get('lang'));
+                if (q.has('count')) {
+                    totalReservasCount = Math.min(10, Math.max(1, parseInt(q.get('count')) || 1));
+                    document.getElementById('select-cant-reservas').value = totalReservasCount;
                 }
 
-                if (q.has(`cp_${i}`)) res.checkpoint = q.get(`cp_${i}`);
-                if (q.has(`dep_${i}`)) res.deposito = q.get(`dep_${i}`);
-                if (q.has(`sal_${i}`)) res.saldo = q.get(`sal_${i}`);
-                if (q.has(`d_${i}`)) res.divisa = q.get(`d_${i}`);
-                if (q.has(`tc_${i}`)) res.tipoCambio = q.get(`tc_${i}`);
-                if (q.has(`no_${i}`)) res.notas = q.get(`no_${i}`);
+                const primaryName = q.get('n') || '';
+                const primaryPhone = q.get('p') || '';
+                const primaryHotel = q.get('h') || '';
+
+                for (let i = 0; i < totalReservasCount; i++) {
+                    const res = reservasData[i];
+                    res.nombreCliente = primaryName;
+                    res.telefono = primaryPhone;
+                    res.hotel = primaryHotel;
+
+                    if (q.has(`a_${i}`)) res.actividad = q.get(`a_${i}`);
+                    if (q.has(`oa_${i}`)) res.otraActividad = q.get(`oa_${i}`);
+                    if (q.has(`f_${i}`)) res.fechaServicio = q.get(`f_${i}`);
+                    if (q.has(`ad_${i}`)) res.adultos = parseInt(q.get(`ad_${i}`)) || 1;
+                    if (q.has(`mn_${i}`)) res.menores = parseInt(q.get(`mn_${i}`)) || 0;
+
+                    if (q.has(`ci_${i}`)) {
+                        const ciVal = q.get(`ci_${i}`);
+                        const parts = ciVal.split(' ');
+                        if (parts.length === 2) {
+                            res.checkin = parts[0];
+                            res.checkinPeriod = parts[1];
+                        } else {
+                            res.checkin = ciVal;
+                        }
+                    }
+
+                    if (q.has(`cp_${i}`)) res.checkpoint = q.get(`cp_${i}`);
+                    if (q.has(`dep_${i}`)) res.deposito = q.get(`dep_${i}`);
+                    if (q.has(`sal_${i}`)) res.saldo = q.get(`sal_${i}`);
+                    if (q.has(`d_${i}`)) res.divisa = q.get(`d_${i}`);
+                    if (q.has(`tc_${i}`)) res.tipoCambio = q.get(`tc_${i}`);
+                    if (q.has(`no_${i}`)) res.notas = q.get(`no_${i}`);
+                }
+
+                if (q.get('view') === 'voucher') {
+                    const formCol = document.getElementById('form-container');
+                    const voucherWrapper = document.getElementById('vouchers-main-wrapper');
+                    
+                    if (formCol) formCol.remove();
+                    if (voucherWrapper) {
+                        voucherWrapper.classList.remove('lg:col-span-7');
+                        voucherWrapper.classList.add('lg:col-span-12', 'max-w-3xl', 'mx-auto', 'my-2');
+                    }
+                }
             }
 
             renderTabsBar();
             loadFormFromReservaData(0);
             renderAllVouchers();
-
-            if (q.get('view') === 'voucher') {
-                const formCol = document.getElementById('form-container');
-                const voucherWrapper = document.getElementById('vouchers-main-wrapper');
-                
-                if (formCol) formCol.remove();
-                if (voucherWrapper) {
-                    voucherWrapper.classList.remove('lg:col-span-7');
-                    voucherWrapper.classList.add('lg:col-span-12', 'max-w-3xl', 'mx-auto', 'my-2');
-                }
-            }
         }
 
         function mostrarToast(mensaje) {
@@ -1417,6 +1417,9 @@
         // Run initializers
         initFormOptions();
         fetchActivities();
+        renderTabsBar();
+        loadFormFromReservaData(0);
+        renderAllVouchers();
         resetScrollToTop();
     </script>
 </body>
