@@ -122,7 +122,6 @@
         <!-- Form Section -->
         <div id="form-container" class="lg:col-span-5 w-full bg-white p-4 sm:p-5 md:p-6 rounded-2xl border border-zinc-200/90 shadow-sm h-fit no-print overflow-hidden">
             
-            <!-- Header & Language Switcher & Batch Count -->
             <div class="border-b border-zinc-100 pb-3.5 mb-4 space-y-3">
                 <div class="flex items-center justify-between gap-2">
                     <div class="min-w-0">
@@ -142,7 +141,6 @@
                     </div>
                 </div>
 
-                <!-- Multi-Booking Selector Pill -->
                 <div class="p-2.5 bg-zinc-900 text-white rounded-xl flex items-center justify-between gap-2 shadow-sm">
                     <div class="min-w-0">
                         <span data-i18n="lblCantReservas" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">Cantidad de Reservas</span>
@@ -162,7 +160,6 @@
                     </select>
                 </div>
 
-                <!-- Dynamic Reservation Tabs Bar -->
                 <div id="tabs-reservas-bar" class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                     <!-- Tab buttons injected via JS -->
                 </div>
@@ -170,25 +167,21 @@
             
             <form id="reserveForm" class="space-y-3.5" onsubmit="event.preventDefault();">
                 
-                <!-- Client Name -->
                 <div>
                     <label data-i18n="lblCliente" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Nombre del Cliente</label>
                     <input type="text" id="nombreCliente" required placeholder="Ej. Juan Pérez" class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
                 </div>
 
-                <!-- Client Phone -->
                 <div>
                     <label data-i18n="lblTelefono" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Teléfono / WhatsApp</label>
                     <input type="tel" id="telefono" placeholder="Ej. +52 998 123 4567" class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
                 </div>
 
-                <!-- Hotel / Lodging -->
                 <div>
                     <label data-i18n="lblHotel" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Hotel / Hospedaje</label>
                     <input type="text" id="hotel" placeholder="Ej. Grand Oasis / Airbnb" class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
                 </div>
 
-                <!-- Activity Selection -->
                 <div>
                     <label data-i18n="lblActividad" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Actividad / Embarcación</label>
                     <select id="actividad" required class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
@@ -218,7 +211,6 @@
                     </div>
                 </div>
 
-                <!-- Passengers Count -->
                 <div class="grid grid-cols-2 gap-3 min-w-0">
                     <div>
                         <label data-i18n="lblAdultos" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1 truncate">Adultos</label>
@@ -250,7 +242,6 @@
                     </div>
                 </div>
 
-                <!-- Payment Breakdown (Deposit, Saldo, Currency) -->
                 <div class="p-3 bg-zinc-50/90 rounded-xl border border-zinc-200/80 space-y-2.5">
                     <div class="flex items-center justify-between">
                         <span data-i18n="lblDesglosePago" class="block text-xs font-bold uppercase tracking-wider text-zinc-700">Desglose de Pago</span>
@@ -281,7 +272,6 @@
                     </div>
                 </div>
 
-                <!-- Internal Currency Converter -->
                 <div class="p-2.5 bg-zinc-50/90 rounded-xl border border-zinc-200/80">
                     <span data-i18n="lblConversor" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1.5">Conversor de Divisas Interno</span>
                     <div class="grid grid-cols-2 gap-2 text-xs">
@@ -302,13 +292,11 @@
                     <textarea id="notas" rows="2" placeholder="Restricciones alimenticias, decoraciones, itinerarios especiales..." class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs"></textarea>
                 </div>
 
-                <!-- Confirmation Code -->
                 <div>
                     <label data-i18n="lblConfirmacion" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Confirmación Automática</label>
                     <input type="text" id="confirmacion" readonly class="w-full px-3.5 py-2 bg-zinc-100/80 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-600 font-medium cursor-not-allowed">
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
                     <button type="button" onclick="imprimirVoucher()" class="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -322,7 +310,6 @@
             </form>
         </div>
 
-        <!-- Voucher Card Preview Outer Container -->
         <div id="vouchers-main-wrapper" class="lg:col-span-7 space-y-6">
             <div id="vouchers-list-container" class="space-y-6">
             </div>
@@ -466,6 +453,7 @@
                 summaryTableDate: "Fecha Servicio",
                 summaryTableActivity: "Actividad / Embarcación",
                 summaryTablePax: "Pasajeros",
+                summaryTableTC: "T.C. (Tipo Cambio)",
                 summaryTableDeposit: "Depósito Pagado",
                 summaryTableBalance: "Saldo Pendiente",
                 summaryTableTotal: "Total Reserva",
@@ -548,6 +536,7 @@
                 summaryTableDate: "Service Date",
                 summaryTableActivity: "Activity / Vessel",
                 summaryTablePax: "Guests",
+                summaryTableTC: "Ex. Rate",
                 summaryTableDeposit: "Deposit Paid",
                 summaryTableBalance: "Balance Due",
                 summaryTableTotal: "Total Price",
@@ -570,7 +559,6 @@
             }
         };
 
-        // Función para mostrar / ocultar el campo de texto manual cuando se escoge "Otros"
         function toggleOtraActividad() {
             const actSel = document.getElementById('actividad');
             const otraInput = document.getElementById('otraActividad');
@@ -1126,6 +1114,7 @@
             const total = deposito + saldo;
             const divisa = item.divisa || 'MXN';
             const sym = getSimboloDivisa(divisa);
+            const tcVal = parseFloat(item.tipoCambio) || 20;
 
             totalDepositos += deposito;
             totalSaldos += saldo;
@@ -1149,6 +1138,7 @@
                     <td class="p-2.5 font-medium">${formatarFecha(fechaServ, currentLang)}</td>
                     <td class="p-2.5 font-bold text-zinc-950">${actName}</td>
                     <td class="p-2.5 text-center font-medium">${totalPax} PAX</td>
+                    <td class="p-2.5 text-center font-mono font-bold text-zinc-600">$${tcVal.toFixed(2)} MXN</td>
                     <td class="p-2.5 text-right font-bold text-emerald-600">${sym}${deposito.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
                     <td class="p-2.5 text-right font-bold text-amber-600">${sym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
                     <td class="p-2.5 text-right font-black text-zinc-900">${sym}${total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
@@ -1194,13 +1184,14 @@
                 </div>
 
                 <div class="overflow-x-auto border border-zinc-300 rounded-xl">
-                    <table class="w-full text-left border-collapse min-w-[600px]">
+                    <table class="w-full text-left border-collapse min-w-[650px]">
                         <thead>
                             <tr class="bg-zinc-900 text-white text-[10px] font-extrabold uppercase tracking-wider">
                                 <th class="p-2.5">${dictionary[currentLang].summaryTableCode}</th>
                                 <th class="p-2.5">${dictionary[currentLang].summaryTableDate}</th>
                                 <th class="p-2.5">${dictionary[currentLang].summaryTableActivity}</th>
                                 <th class="p-2.5 text-center">${dictionary[currentLang].summaryTablePax}</th>
+                                <th class="p-2.5 text-center">${dictionary[currentLang].summaryTableTC}</th>
                                 <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableDeposit}</th>
                                 <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableBalance}</th>
                                 <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableTotal}</th>
@@ -1397,7 +1388,6 @@
             }, 100);
         }
 
-        // Event listeners para renderizado en tiempo real
         const inputsToSync = ['nombreCliente', 'telefono', 'hotel', 'actividad', 'otraActividad', 'fecha', 'adultos', 'menores', 'checkin', 'checkpoint', 'deposito', 'saldo', 'divisa', 'tipoCambio', 'notas'];
         inputsToSync.forEach(id => {
             const el = document.getElementById(id);
@@ -1407,7 +1397,6 @@
             }
         });
 
-        // Inicializaciones
         initFormOptions();
         fetchActivities();
         renderTabsBar();
