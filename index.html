@@ -170,7 +170,7 @@
             
             <form id="reserveForm" class="space-y-3.5" onsubmit="event.preventDefault();">
                 
-                <!-- Client Name (Primary / Base field) -->
+                <!-- Client Name -->
                 <div>
                     <label data-i18n="lblCliente" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Nombre del Cliente</label>
                     <input type="text" id="nombreCliente" required placeholder="Ej. Juan Pérez" class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-transparent transition-all shadow-2xs">
@@ -324,11 +324,9 @@
 
         <!-- Voucher Card Preview Outer Container -->
         <div id="vouchers-main-wrapper" class="lg:col-span-7 space-y-6">
-            <!-- Dynamic Vouchers injected via JS -->
             <div id="vouchers-list-container" class="space-y-6">
             </div>
 
-            <!-- Dynamic Financial Control Sheet (Injected when N > 1) -->
             <div id="summary-sheet-wrapper" class="hidden">
             </div>
         </div>
@@ -336,7 +334,6 @@
     </div>
 
     <script>
-        // Force browser to always scroll to top on open, refresh, or back/forward navigation
         if ('scrollRestoration' in history) {
             history.scrollRestoration = 'manual';
         }
@@ -364,9 +361,8 @@
         window.catalogoActividades = {};
         let currentLang = 'es';
 
-        // Multi-Booking state management
         let totalReservasCount = 1;
-        let activeReservaIndex = 0; // 0 to totalReservasCount - 1
+        let activeReservaIndex = 0;
         let reservasData = [];
 
         function createDefaultReserva(num) {
@@ -436,7 +432,6 @@
                 btnImprimir: "Imprimir / PDF",
                 btnImagen: "Imagen",
 
-                // Voucher labels
                 pvMainTitle: "Voucher de Reserva",
                 pvSubTitle: "Confirmation Document",
                 pvPasajero: "Pasajero Principal",
@@ -463,7 +458,6 @@
                 footerDisclaimer: "Voucher válido con validación QR activa en muelles o punto de registro.",
                 pvValidarReserva: "Validar Reserva",
 
-                // Financial Summary Sheet labels
                 summaryTitle: "RESUMEN",
                 summarySubTitle: "",
                 summaryClientHeader: "Resumen de Reservas de:",
@@ -484,7 +478,6 @@
                 pvServiceIndex: "Servicio",
                 pvOf: "de",
 
-                // Option strings
                 optAdult: "Adulto",
                 optAdults: "Adultos",
                 optChild: "Menor",
@@ -521,7 +514,6 @@
                 btnImprimir: "Print / PDF",
                 btnImagen: "Save Image",
 
-                // Voucher labels
                 pvMainTitle: "Booking Voucher",
                 pvSubTitle: "Confirmation Document",
                 pvPasajero: "Primary Guest",
@@ -548,39 +540,50 @@
                 footerDisclaimer: "Voucher valid upon active QR verification at dock or check-in location.",
                 pvValidarReserva: "Validate Booking",
 
-            // Financial Summary Sheet labels
-            summaryTitle: "SUMMARY",
-            summarySubTitle: "",
-            summaryClientHeader: "Reservations Summary for:",
-            summaryTotalBookings: "Total Booked Services:",
-            summaryTableCode: "Code / ID",
-            summaryTableDate: "Service Date",
-            summaryTableActivity: "Activity / Vessel",
-            summaryTablePax: "Guests",
-            summaryTableDeposit: "Deposit Paid",
-            summaryTableBalance: "Balance Due",
-            summaryTableTotal: "Total Price",
-            summaryTotalDeposits: "TOTAL DEPOSITED",
-            summaryTotalBalances: "TOTAL BALANCE DUE",
-            summaryGrandTotal: "GRAND TOTAL",
-            summaryRefConversion: "Est. Total Conversion:",
-            summaryConfirmedCount: "Confirmed Bookings",
-            summaryFooterNote: "* Summary automatically generated for booking control and verification.",
-            pvServiceIndex: "Service",
-            pvOf: "of",
+                summaryTitle: "SUMMARY",
+                summarySubTitle: "",
+                summaryClientHeader: "Reservations Summary for:",
+                summaryTotalBookings: "Total Booked Services:",
+                summaryTableCode: "Code / ID",
+                summaryTableDate: "Service Date",
+                summaryTableActivity: "Activity / Vessel",
+                summaryTablePax: "Guests",
+                summaryTableDeposit: "Deposit Paid",
+                summaryTableBalance: "Balance Due",
+                summaryTableTotal: "Total Price",
+                summaryTotalDeposits: "TOTAL DEPOSITED",
+                summaryTotalBalances: "TOTAL BALANCE DUE",
+                summaryGrandTotal: "GRAND TOTAL",
+                summaryRefConversion: "Est. Total Conversion:",
+                summaryConfirmedCount: "Confirmed Bookings",
+                summaryFooterNote: "* Summary automatically generated for booking control and verification.",
+                pvServiceIndex: "Service",
+                pvOf: "of",
 
-            // Option strings
-            optAdult: "Adult",
-            optAdults: "Adults",
-            optChild: "Child",
-            optChildren: "Children",
-            optOther: "Other (Specify)",
-            optManual: "Specify Activity",
-            msgImagenDescargada: "¡Imagen descargada con éxito!"
+                optAdult: "Adult",
+                optAdults: "Adults",
+                optChild: "Child",
+                optChildren: "Children",
+                optOther: "Other (Specify)",
+                optManual: "Specify Activity",
+                msgImagenDescargada: "¡Imagen descargada con éxito!"
+            }
+        };
+
+        // Función para mostrar / ocultar el campo de texto manual cuando se escoge "Otros"
+        function toggleOtraActividad() {
+            const actSel = document.getElementById('actividad');
+            const otraInput = document.getElementById('otraActividad');
+            if (actSel && otraInput) {
+                if (actSel.value === 'Otros') {
+                    otraInput.classList.remove('hidden');
+                } else {
+                    otraInput.classList.add('hidden');
+                }
+            }
         }
-    };
 
-    function switchLanguage(lang) {
+        function switchLanguage(lang) {
             currentLang = lang;
             
             const btnEs = document.getElementById('btn-lang-es');
@@ -608,24 +611,24 @@
         }
 
         function renderTabsBar() {
-        const bar = document.getElementById('tabs-reservas-bar');
-        bar.innerHTML = '';
-        for (let i = 0; i < totalReservasCount; i++) {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            const isActive = (i === activeReservaIndex);
-            btn.className = `px-3 py-1.5 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 ${
-                isActive 
-                    ? 'bg-zinc-900 text-white shadow-xs border border-zinc-800' 
-                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 border border-zinc-200/80'
-            }`;
-            btn.innerHTML = `<span>Reserva #${i+1}</span>`;
-            btn.onclick = () => selectTabReserva(i);
-            bar.appendChild(btn);
+            const bar = document.getElementById('tabs-reservas-bar');
+            bar.innerHTML = '';
+            for (let i = 0; i < totalReservasCount; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                const isActive = (i === activeReservaIndex);
+                btn.className = `px-3 py-1.5 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 ${
+                    isActive 
+                        ? 'bg-zinc-900 text-white shadow-xs border border-zinc-800' 
+                        : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 border border-zinc-200/80'
+                }`;
+                btn.innerHTML = `<span>Reserva #${i+1}</span>`;
+                btn.onclick = () => selectTabReserva(i);
+                bar.appendChild(btn);
+            }
         }
-    }
 
-    function changeCantidadReservas(count) {
+        function changeCantidadReservas(count) {
             totalReservasCount = count;
             if (activeReservaIndex >= totalReservasCount) {
                 activeReservaIndex = totalReservasCount - 1;
@@ -680,7 +683,6 @@
             data.tipoCambio = document.getElementById('tipoCambio').value;
             data.notas = document.getElementById('notas').value;
 
-            // If updating Reserva 1 (Base), propagate Name, Phone, Hotel to sub-reservations
             if (activeReservaIndex === 0) {
                 for (let i = 1; i < 10; i++) {
                     reservasData[i].nombreCliente = data.nombreCliente;
@@ -705,6 +707,8 @@
                 document.getElementById('otraActividad').value = data.otraActividad || '';
             }
             
+            toggleOtraActividad();
+
             document.getElementById('fechaReserva').value = data.fechaReserva;
             document.getElementById('fecha').value = data.fechaServicio;
             document.getElementById('adultos').value = data.adultos;
@@ -716,10 +720,10 @@
             document.getElementById('deposito').value = data.deposito;
             document.getElementById('saldo').value = data.saldo;
             document.getElementById('tipoCambio').value = data.tipoCambio || '20.00';
-        document.getElementById('notas').value = data.notas || '';
-    }
+            document.getElementById('notas').value = data.notas || '';
+        }
 
-    function updateSelectOptionsLabels() {
+        function updateSelectOptionsLabels() {
             const aSel = document.getElementById('adultos');
             const currentAdultVal = aSel.value;
             aSel.innerHTML = '';
@@ -871,11 +875,10 @@
 
         function renderAllVouchers() {
             saveCurrentFormToReservaData();
+            toggleOtraActividad();
 
-            // Filter active reservations based on totalReservasCount
             let activeItems = reservasData.slice(0, totalReservasCount);
 
-            // Sort active items chronologically by Fecha del Servicio (fechaServicio)
             activeItems.sort((a, b) => {
                 const fa = a.fechaServicio || '9999-99-99';
                 const fb = b.fechaServicio || '9999-99-99';
@@ -890,7 +893,6 @@
                 listContainer.appendChild(cardEl);
             });
 
-            // Update current tab form active state text balance total display
             const currentData = reservasData[activeReservaIndex];
             const currentDep = parseFloat(currentData.deposito) || 0;
             const currentSal = parseFloat(currentData.saldo) || 0;
@@ -898,7 +900,6 @@
             const currentSym = getSimboloDivisa(currentData.divisa);
             document.getElementById('txt-balance-total').textContent = `${currentSym}${currentTot.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${currentData.divisa}`;
 
-            // Handle Financial Summary Sheet (Render if totalReservasCount > 1)
             const summaryWrapper = document.getElementById('summary-sheet-wrapper');
             if (totalReservasCount > 1) {
                 summaryWrapper.classList.remove('hidden');
@@ -934,14 +935,12 @@
 
             const actividadFinal = (actSel === "Otros") ? (otraAct || '---') : (actSel || '---');
 
-            // Generate Confirmation Code
             let codigo = "ACT-XXXXXX-" + totalPax;
             if (fechaServicio !== '---') {
                 const p = fechaServicio.split('-');
                 codigo = `ACT-${p[0].substring(2)}${p[1]}${p[2]}-${totalPax}`;
             }
 
-            // Calculation reference string
             let txtPrevConv = "---";
             if (saldo > 0) {
                 if (divisa === "USD" || divisa === "EUR") {
@@ -1174,12 +1173,10 @@
 
         return `
             <div class="summary-sheet-item bg-white p-5 sm:p-7 rounded-2xl border-2 border-zinc-900 shadow-lg print-card space-y-3.5">
-                <!-- Summary Sheet Header -->
                 <div class="border-b-2 border-zinc-900 pb-3 text-center">
                     <h2 class="text-xl sm:text-2xl font-black text-zinc-950 uppercase tracking-tight">${dictionary[currentLang].summaryTitle}</h2>
                 </div>
 
-                <!-- Client Specs Header -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-100 p-3 rounded-xl border border-zinc-300 text-xs">
                     <div>
                         <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryClientHeader}</span>
@@ -1196,7 +1193,6 @@
                     </div>
                 </div>
 
-                <!-- Detailed Accounting Table -->
                 <div class="overflow-x-auto border border-zinc-300 rounded-xl">
                     <table class="w-full text-left border-collapse min-w-[600px]">
                         <thead>
@@ -1216,7 +1212,6 @@
                     </table>
                 </div>
 
-                <!-- Grand Totals Banner -->
                 <div class="bg-zinc-950 text-white p-3.5 rounded-xl border border-zinc-800 space-y-2.5">
                     <div class="grid grid-cols-3 gap-3 border-b border-zinc-800 pb-2 text-center">
                         <div>
@@ -1253,13 +1248,11 @@
             
             q.append('count', totalReservasCount);
             
-            // Encode primary contact
             const primary = reservasData[0];
             if(primary.nombreCliente) q.append('n', primary.nombreCliente);
             if(primary.telefono) q.append('p', primary.telefono);
             if(primary.hotel) q.append('h', primary.hotel);
 
-            // Encode all active reservations
             for (let i = 0; i < totalReservasCount; i++) {
                 const res = reservasData[i];
                 q.append(`a_${i}`, res.actividad || '');
@@ -1404,7 +1397,7 @@
             }, 100);
         }
 
-        // Attach event listeners for real-time synchronization
+        // Event listeners para renderizado en tiempo real
         const inputsToSync = ['nombreCliente', 'telefono', 'hotel', 'actividad', 'otraActividad', 'fecha', 'adultos', 'menores', 'checkin', 'checkpoint', 'deposito', 'saldo', 'divisa', 'tipoCambio', 'notas'];
         inputsToSync.forEach(id => {
             const el = document.getElementById(id);
@@ -1414,7 +1407,7 @@
             }
         });
 
-        // Run initializers
+        // Inicializaciones
         initFormOptions();
         fetchActivities();
         renderTabsBar();
