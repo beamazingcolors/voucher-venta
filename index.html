@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Sistema de Reservas - Confirmation Voucher</title>
+    <!-- External assets cached by Service Worker for full offline capabilities -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -125,9 +127,16 @@
             <div class="border-b border-zinc-100 pb-3.5 mb-4 space-y-3">
                 <div class="flex items-center justify-between gap-2">
                     <div class="min-w-0">
-                        <h2 data-i18n="titleForm" class="text-base sm:text-lg md:text-xl font-bold tracking-tight text-zinc-900 truncate">
-                            Captura de Reserva
-                        </h2>
+                        <div class="flex items-center gap-2">
+                            <h2 data-i18n="titleForm" class="text-base sm:text-lg md:text-xl font-bold tracking-tight text-zinc-900 truncate">
+                                Captura de Reserva
+                            </h2>
+                            <!-- Network status badge -->
+                            <div id="network-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/80 flex-shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span id="network-text">Online</span>
+                            </div>
+                        </div>
                         <p data-i18n="subtitleForm" class="text-[11px] text-zinc-400 font-medium hidden sm:block">Ingrese los detalles para generar el voucher</p>
                     </div>
                     
@@ -141,6 +150,7 @@
                     </div>
                 </div>
 
+                <!-- Multi-Booking Selector Pill -->
                 <div class="p-2.5 bg-zinc-900 text-white rounded-xl flex items-center justify-between gap-2 shadow-sm">
                     <div class="min-w-0">
                         <span data-i18n="lblCantReservas" class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300">Cantidad de Reservas</span>
@@ -160,6 +170,7 @@
                     </select>
                 </div>
 
+                <!-- Dynamic Reservation Tabs Bar -->
                 <div id="tabs-reservas-bar" class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                     <!-- Tab buttons injected via JS -->
                 </div>
@@ -472,7 +483,8 @@
                 optChildren: "Menores",
                 optOther: "Otros (Especificar)",
                 optManual: "Especificar Actividad",
-                msgCopiado: "¡Imagen copiada al portapapeles! Pégala (Ctrl+V) en el chat de WhatsApp."
+                msgCopiado: "¡Imagen copiada al portapapeles! Pégala (Ctrl+V) en el chat de WhatsApp.",
+                msgOfflineCatalog: "Catálogo cargado en Modo Offline (Memoria Local)"
             },
             en: {
                 titleForm: "Reservation Capture",
@@ -555,9 +567,29 @@
                 optChildren: "Children",
                 optOther: "Other (Specify)",
                 optManual: "Specify Activity",
-                msgImagenDescargada: "¡Imagen descargada con éxito!"
+                msgImagenDescargada: "¡Imagen descargada con éxito!",
+                msgOfflineCatalog: "Catalog loaded in Offline Mode (Local Memory)"
             }
         };
+
+        // Network status detector
+        function updateNetworkStatus() {
+            const badge = document.getElementById('network-badge');
+            const txt = document.getElementById('network-text');
+            if (!badge || !txt) return;
+
+            if (navigator.onLine) {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/80 flex-shrink-0";
+                txt.textContent = "Online";
+            } else {
+                badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200/80 flex-shrink-0";
+                txt.textContent = "Modo Offline";
+            }
+        }
+
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+        document.addEventListener('DOMContentLoaded', updateNetworkStatus);
 
         function toggleOtraActividad() {
             const actSel = document.getElementById('actividad');
@@ -569,6 +601,28 @@
                     otraInput.classList.add('hidden');
                 }
             }
+        }
+
+        // Local 100% offline QR Code generator using client-side QRCode library
+        function generateQRCodeDataURL(text) {
+            try {
+                if (typeof QRCode !== 'undefined') {
+                    const tempDiv = document.createElement('div');
+                    new QRCode(tempDiv, {
+                        text: text,
+                        width: 140,
+                        height: 140,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                    const canvas = tempDiv.querySelector('canvas');
+                    if (canvas) return canvas.toDataURL('image/png');
+                    const img = tempDiv.querySelector('img');
+                    if (img && img.src) return img.src;
+                }
+            } catch(err) {
+                console.warn('Local QRCode generator error, falling back to URL...', err);
+            }
+            return `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(text)}`;
         }
 
         function switchLanguage(lang) {
@@ -802,6 +856,21 @@
             renderTabsBar();
         }
 
+        function populateCatalogSelectOptions(actSelect) {
+            actSelect.innerHTML = '<option value="">-- Selecciona una Actividad --</option>';
+            Object.keys(window.catalogoActividades).forEach(nameVal => {
+                let opt = document.createElement('option');
+                opt.value = nameVal; 
+                opt.textContent = nameVal;
+                actSelect.appendChild(opt);
+            });
+
+            let optOtros = document.createElement('option');
+            optOtros.value = "Otros"; 
+            optOtros.textContent = dictionary[currentLang].optOther;
+            actSelect.appendChild(optOtros);
+        }
+
         async function fetchActivities() {
             const actSelect = document.getElementById('actividad');
             try {
@@ -822,8 +891,7 @@
 
                 if (idxNombre === -1) throw new Error('Falta columna estructural "Nombre"');
 
-                actSelect.innerHTML = '<option value="">-- Selecciona una Actividad --</option>';
-                
+                window.catalogoActividades = {};
                 for (let i = 1; i < lines.length; i++) {
                     const cols = lines[i].split('\t');
                     const nameVal = cols[idxNombre] ? cols[idxNombre].trim() : "";
@@ -835,24 +903,30 @@
                             descriptivo: idxDescriptivo !== -1 && cols[idxDescriptivo] ? cols[idxDescriptivo].trim() : "",
                             incluye: idxIncluye !== -1 && cols[idxIncluye] ? cols[idxIncluye].trim() : ""
                         };
-
-                        let opt = document.createElement('option');
-                        opt.value = nameVal; 
-                        opt.textContent = nameVal;
-                        actSelect.appendChild(opt);
                     }
                 }
 
-                let optOtros = document.createElement('option');
-                optOtros.value = "Otros"; 
-                optOtros.textContent = dictionary[currentLang].optOther;
-                actSelect.appendChild(optOtros);
-
+                // Cache catalog into LocalStorage for Offline Mode
+                localStorage.setItem('cached_catalogo_actividades', JSON.stringify(window.catalogoActividades));
+                populateCatalogSelectOptions(actSelect);
                 loadFromUrlQuery();
 
             } catch (error) {
-                console.error('Error fetching sheet:', error);
-                actSelect.innerHTML = '<option value="">⚠️ Error de lectura. Catálogo manual.</option>';
+                console.warn('Network issue or offline mode. Attempting LocalStorage cache fallback...', error);
+                const cachedData = localStorage.getItem('cached_catalogo_actividades');
+                if (cachedData) {
+                    try {
+                        window.catalogoActividades = JSON.parse(cachedData);
+                        populateCatalogSelectOptions(actSelect);
+                        mostrarToast(dictionary[currentLang].msgOfflineCatalog);
+                        loadFromUrlQuery();
+                        return;
+                    } catch(e) {
+                        console.error('Failed parsing cached catalog:', e);
+                    }
+                }
+
+                actSelect.innerHTML = '<option value="">⚠️ Modo Offline / Catálogo manual</option>';
                 let optOtros = document.createElement('option');
                 optOtros.value = "Otros"; 
                 optOtros.textContent = dictionary[currentLang].optManual;
@@ -969,11 +1043,12 @@
             }
 
             const finalUrl = obtenerUrlVoucher();
-            const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(finalUrl)}`;
+            // Generate QR Code locally (100% Offline Compatible)
+            const qrSrc = generateQRCodeDataURL(finalUrl);
 
             const card = document.createElement('div');
-        card.className = "voucher-card-item bg-white p-4 sm:p-6 md:p-7 rounded-2xl border border-zinc-200/90 shadow-sm print-card flex flex-col justify-between overflow-hidden relative";
-        card.innerHTML = `
+            card.className = "voucher-card-item bg-white p-4 sm:p-6 md:p-7 rounded-2xl border border-zinc-200/90 shadow-sm print-card flex flex-col justify-between overflow-hidden relative";
+            card.innerHTML = `
             <div>
                 <!-- Voucher Header -->
                 <div class="border-b border-zinc-200 pb-3 mb-3.5 pt-0.5">
@@ -1095,144 +1170,144 @@
                 </div>
             </div>
         `;
-        return card;
-    }
+            return card;
+        }
 
-    function createFinancialSummarySheetHtml(sortedItems) {
-        const primary = sortedItems[0] || {};
-        const cliente = primary.nombreCliente || '---';
-        const telefono = primary.telefono || '';
-        const hotel = primary.hotel || '---';
+        function createFinancialSummarySheetHtml(sortedItems) {
+            const primary = sortedItems[0] || {};
+            const cliente = primary.nombreCliente || '---';
+            const telefono = primary.telefono || '';
+            const hotel = primary.hotel || '---';
 
-        let totalDepositos = 0;
-        let totalSaldos = 0;
-        let granTotal = 0;
+            let totalDepositos = 0;
+            let totalSaldos = 0;
+            let granTotal = 0;
 
-        let tableRows = sortedItems.map((item, idx) => {
-            const deposito = parseFloat(item.deposito) || 0;
-            const saldo = parseFloat(item.saldo) || 0;
-            const total = deposito + saldo;
-            const divisa = item.divisa || 'MXN';
-            const sym = getSimboloDivisa(divisa);
-            const tcVal = parseFloat(item.tipoCambio) || 20;
+            let tableRows = sortedItems.map((item, idx) => {
+                const deposito = parseFloat(item.deposito) || 0;
+                const saldo = parseFloat(item.saldo) || 0;
+                const total = deposito + saldo;
+                const divisa = item.divisa || 'MXN';
+                const sym = getSimboloDivisa(divisa);
+                const tcVal = parseFloat(item.tipoCambio) || 20;
 
-            totalDepositos += deposito;
-            totalSaldos += saldo;
-            granTotal += total;
+                totalDepositos += deposito;
+                totalSaldos += saldo;
+                granTotal += total;
 
-            const actName = (item.actividad === 'Otros') ? (item.otraActividad || '---') : (item.actividad || '---');
-            const fechaServ = item.fechaServicio || '---';
-            const adultos = item.adultos || 1;
-            const menores = item.menores || 0;
-            const totalPax = adultos + menores;
+                const actName = (item.actividad === 'Otros') ? (item.otraActividad || '---') : (item.actividad || '---');
+                const fechaServ = item.fechaServicio || '---';
+                const adultos = item.adultos || 1;
+                const menores = item.menores || 0;
+                const totalPax = adultos + menores;
 
-            let codigo = "ACT-XXXXXX-" + totalPax;
-            if (fechaServ !== '---') {
-                const p = fechaServ.split('-');
-                codigo = `ACT-${p[0].substring(2)}${p[1]}${p[2]}-${totalPax}`;
+                let codigo = "ACT-XXXXXX-" + totalPax;
+                if (fechaServ !== '---') {
+                    const p = fechaServ.split('-');
+                    codigo = `ACT-${p[0].substring(2)}${p[1]}${p[2]}-${totalPax}`;
+                }
+
+                return `
+                    <tr class="border-b border-zinc-200 text-xs text-zinc-800 ${idx % 2 === 0 ? 'bg-zinc-50/50' : 'bg-white'}">
+                        <td class="p-2.5 font-mono font-bold text-zinc-900">${codigo}</td>
+                        <td class="p-2.5 font-medium">${formatarFecha(fechaServ, currentLang)}</td>
+                        <td class="p-2.5 font-bold text-zinc-950">${actName}</td>
+                        <td class="p-2.5 text-center font-medium">${totalPax} PAX</td>
+                        <td class="p-2.5 text-center font-mono font-bold text-zinc-600">$${tcVal.toFixed(2)} MXN</td>
+                        <td class="p-2.5 text-right font-bold text-emerald-600">${sym}${deposito.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
+                        <td class="p-2.5 text-right font-bold text-amber-600">${sym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
+                        <td class="p-2.5 text-right font-black text-zinc-900">${sym}${total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const mainDivisa = primary.divisa || 'MXN';
+            const mainSym = getSimboloDivisa(mainDivisa);
+            const tc = parseFloat(primary.tipoCambio) || 20;
+
+            let refConvStr = "---";
+            if (totalSaldos > 0) {
+                if (mainDivisa === "USD" || mainDivisa === "EUR") {
+                    let conv = totalSaldos * tc;
+                    refConvStr = `$${conv.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})} MXN`;
+                } else {
+                    let conv = totalSaldos / tc;
+                    refConvStr = `$${conv.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USD`;
+                }
             }
 
             return `
-                <tr class="border-b border-zinc-200 text-xs text-zinc-800 ${idx % 2 === 0 ? 'bg-zinc-50/50' : 'bg-white'}">
-                    <td class="p-2.5 font-mono font-bold text-zinc-900">${codigo}</td>
-                    <td class="p-2.5 font-medium">${formatarFecha(fechaServ, currentLang)}</td>
-                    <td class="p-2.5 font-bold text-zinc-950">${actName}</td>
-                    <td class="p-2.5 text-center font-medium">${totalPax} PAX</td>
-                    <td class="p-2.5 text-center font-mono font-bold text-zinc-600">$${tcVal.toFixed(2)} MXN</td>
-                    <td class="p-2.5 text-right font-bold text-emerald-600">${sym}${deposito.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
-                    <td class="p-2.5 text-right font-bold text-amber-600">${sym}${saldo.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
-                    <td class="p-2.5 text-right font-black text-zinc-900">${sym}${total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${divisa}</td>
-                </tr>
+                <div class="summary-sheet-item bg-white p-5 sm:p-7 rounded-2xl border-2 border-zinc-900 shadow-lg print-card space-y-3.5">
+                    <div class="border-b-2 border-zinc-900 pb-3 text-center">
+                        <h2 class="text-xl sm:text-2xl font-black text-zinc-950 uppercase tracking-tight">${dictionary[currentLang].summaryTitle}</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-100 p-3 rounded-xl border border-zinc-300 text-xs">
+                        <div>
+                            <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryClientHeader}</span>
+                            <span class="font-extrabold text-sm text-zinc-950">${cliente}</span>
+                            ${telefono ? `<span class="block text-zinc-600 font-semibold text-xs">📱 ${telefono}</span>` : ''}
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].pvHotelLabel}</span>
+                            <span class="font-extrabold text-sm text-zinc-950">${hotel}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalBookings}</span>
+                            <span class="font-extrabold text-sm text-emerald-700">${sortedItems.length} ${dictionary[currentLang].summaryConfirmedCount}</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto border border-zinc-300 rounded-xl">
+                        <table class="w-full text-left border-collapse min-w-[650px]">
+                            <thead>
+                                <tr class="bg-zinc-900 text-white text-[10px] font-extrabold uppercase tracking-wider">
+                                    <th class="p-2.5">${dictionary[currentLang].summaryTableCode}</th>
+                                    <th class="p-2.5">${dictionary[currentLang].summaryTableDate}</th>
+                                    <th class="p-2.5">${dictionary[currentLang].summaryTableActivity}</th>
+                                    <th class="p-2.5 text-center">${dictionary[currentLang].summaryTablePax}</th>
+                                    <th class="p-2.5 text-center">${dictionary[currentLang].summaryTableTC}</th>
+                                    <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableDeposit}</th>
+                                    <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableBalance}</th>
+                                    <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableTotal}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-zinc-950 text-white p-3.5 rounded-xl border border-zinc-800 space-y-2.5">
+                        <div class="grid grid-cols-3 gap-3 border-b border-zinc-800 pb-2 text-center">
+                            <div>
+                                <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalDeposits}</span>
+                                <span class="text-sm sm:text-base font-black text-emerald-400">${mainSym}${totalDepositos.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalBalances}</span>
+                                <span class="text-sm sm:text-base font-black text-amber-400">${mainSym}${totalSaldos.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryGrandTotal}</span>
+                                <span class="text-sm sm:text-base font-black text-white">${mainSym}${granTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center text-xs text-zinc-300 pt-0.5">
+                            <span class="font-medium">${dictionary[currentLang].summaryRefConversion}</span>
+                            <span class="font-mono font-bold text-xs sm:text-sm text-zinc-100">${refConvStr}</span>
+                        </div>
+                    </div>
+
+                    <div class="text-center text-[9px] text-zinc-400 italic pt-1">
+                        ${dictionary[currentLang].summaryFooterNote}
+                    </div>
+                </div>
             `;
-        }).join('');
-
-        const mainDivisa = primary.divisa || 'MXN';
-        const mainSym = getSimboloDivisa(mainDivisa);
-        const tc = parseFloat(primary.tipoCambio) || 20;
-
-        let refConvStr = "---";
-        if (totalSaldos > 0) {
-            if (mainDivisa === "USD" || mainDivisa === "EUR") {
-                let conv = totalSaldos * tc;
-                refConvStr = `$${conv.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})} MXN`;
-            } else {
-                let conv = totalSaldos / tc;
-                refConvStr = `$${conv.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} USD`;
-            }
         }
 
-        return `
-            <div class="summary-sheet-item bg-white p-5 sm:p-7 rounded-2xl border-2 border-zinc-900 shadow-lg print-card space-y-3.5">
-                <div class="border-b-2 border-zinc-900 pb-3 text-center">
-                    <h2 class="text-xl sm:text-2xl font-black text-zinc-950 uppercase tracking-tight">${dictionary[currentLang].summaryTitle}</h2>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-100 p-3 rounded-xl border border-zinc-300 text-xs">
-                    <div>
-                        <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryClientHeader}</span>
-                        <span class="font-extrabold text-sm text-zinc-950">${cliente}</span>
-                        ${telefono ? `<span class="block text-zinc-600 font-semibold text-xs">📱 ${telefono}</span>` : ''}
-                    </div>
-                    <div>
-                        <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].pvHotelLabel}</span>
-                        <span class="font-extrabold text-sm text-zinc-950">${hotel}</span>
-                    </div>
-                    <div>
-                        <span class="block text-[10px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalBookings}</span>
-                        <span class="font-extrabold text-sm text-emerald-700">${sortedItems.length} ${dictionary[currentLang].summaryConfirmedCount}</span>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto border border-zinc-300 rounded-xl">
-                    <table class="w-full text-left border-collapse min-w-[650px]">
-                        <thead>
-                            <tr class="bg-zinc-900 text-white text-[10px] font-extrabold uppercase tracking-wider">
-                                <th class="p-2.5">${dictionary[currentLang].summaryTableCode}</th>
-                                <th class="p-2.5">${dictionary[currentLang].summaryTableDate}</th>
-                                <th class="p-2.5">${dictionary[currentLang].summaryTableActivity}</th>
-                                <th class="p-2.5 text-center">${dictionary[currentLang].summaryTablePax}</th>
-                                <th class="p-2.5 text-center">${dictionary[currentLang].summaryTableTC}</th>
-                                <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableDeposit}</th>
-                                <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableBalance}</th>
-                                <th class="p-2.5 text-right">${dictionary[currentLang].summaryTableTotal}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRows}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="bg-zinc-950 text-white p-3.5 rounded-xl border border-zinc-800 space-y-2.5">
-                    <div class="grid grid-cols-3 gap-3 border-b border-zinc-800 pb-2 text-center">
-                        <div>
-                            <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalDeposits}</span>
-                            <span class="text-sm sm:text-base font-black text-emerald-400">${mainSym}${totalDepositos.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
-                        </div>
-                        <div>
-                            <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryTotalBalances}</span>
-                            <span class="text-sm sm:text-base font-black text-amber-400">${mainSym}${totalSaldos.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
-                        </div>
-                        <div>
-                            <span class="block text-[9px] font-bold uppercase text-zinc-400">${dictionary[currentLang].summaryGrandTotal}</span>
-                            <span class="text-sm sm:text-base font-black text-white">${mainSym}${granTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${mainDivisa}</span>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center text-xs text-zinc-300 pt-0.5">
-                        <span class="font-medium">${dictionary[currentLang].summaryRefConversion}</span>
-                        <span class="font-mono font-bold text-xs sm:text-sm text-zinc-100">${refConvStr}</span>
-                    </div>
-                </div>
-
-                <div class="text-center text-[9px] text-zinc-400 italic pt-1">
-                    ${dictionary[currentLang].summaryFooterNote}
-                </div>
-            </div>
-        `;
-    }
-
-    function obtenerUrlVoucher() {
+        function obtenerUrlVoucher() {
             saveCurrentFormToReservaData();
             const baseUrl = window.location.origin + window.location.pathname;
             const q = new URLSearchParams();
@@ -1386,6 +1461,66 @@
                     window.scrollTo(0, posicionScrollOriginal);
                 });
             }, 100);
+        }
+
+        // Register an inline Blob-based PWA Service Worker to cache assets
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'reservas-voucher-v2';
+                    const urlsToCache = [
+                        '${window.location.href.split('?')[0]}',
+                        'https://cdn.tailwindcss.com',
+                        'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                        'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
+                    ];
+
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)).then(() => self.skipWaiting())
+                        );
+                    });
+
+                    self.addEventListener('activate', event => {
+                        event.waitUntil(self.clients.claim());
+                    });
+
+                    self.addEventListener('fetch', event => {
+                        if (event.request.method !== 'GET') return;
+                        event.respondWith(
+                            caches.match(event.request).then(cachedResponse => {
+                                if (cachedResponse) {
+                                    fetch(event.request).then(networkResponse => {
+                                        if (networkResponse.status === 200) {
+                                            caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse));
+                                        }
+                                    }).catch(() => {});
+                                    return cachedResponse;
+                                }
+                                return fetch(event.request).then(networkResponse => {
+                                    if (networkResponse.status === 200) {
+                                        const responseClone = networkResponse.clone();
+                                        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+                                    }
+                                    return networkResponse;
+                                });
+                            })
+                        );
+                    });
+                `;
+
+                try {
+                    const blob = new Blob([swCode], { type: 'application/javascript' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    navigator.serviceWorker.register(blobUrl).then(reg => {
+                        console.log('PWA ServiceWorker registered offline support ready.');
+                    }).catch(err => {
+                        console.warn('ServiceWorker Blob registration failed:', err);
+                    });
+                } catch(e) {
+                    console.warn('Service Worker creation bypassed:', e);
+                }
+            });
         }
 
         const inputsToSync = ['nombreCliente', 'telefono', 'hotel', 'actividad', 'otraActividad', 'fecha', 'adultos', 'menores', 'checkin', 'checkpoint', 'deposito', 'saldo', 'divisa', 'tipoCambio', 'notas'];
