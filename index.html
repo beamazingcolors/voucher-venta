@@ -74,11 +74,11 @@
                 background: white !important; 
                 color: #09090b !important; 
                 padding: 0 !important; 
-                margin: 0 !important;
-                height: auto !important;
-                overflow: visible !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                margin: 0 !important; 
+                height: auto !important; 
+                overflow: visible !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
             }
             .no-print { 
                 display: none !important; 
@@ -90,15 +90,15 @@
                 padding: 1rem 1.25rem !important; 
                 width: 100% !important; 
                 max-width: 100% !important; 
-                box-sizing: border-box !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                page-break-after: always !important;
-                break-after: page !important;
-                height: auto !important;
-                border-radius: 0.75rem !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                box-sizing: border-box !important; 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
+                page-break-after: always !important; 
+                break-after: page !important; 
+                height: auto !important; 
+                border-radius: 0.75rem !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
             }
             .summary-sheet-item {
                 border: 2px solid #18181b !important;
@@ -303,9 +303,16 @@
                     <textarea id="notas" rows="2" placeholder="Restricciones alimenticias, decoraciones, itinerarios especiales..." class="w-full px-3.5 py-2 border border-zinc-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950 transition-all shadow-2xs"></textarea>
                 </div>
 
+                <!-- Folio / Confirmación Section with regenerate button -->
                 <div>
-                    <label data-i18n="lblConfirmacion" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500 mb-1">Confirmación Automática</label>
-                    <input type="text" id="confirmacion" readonly class="w-full px-3.5 py-2 bg-zinc-100/80 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-600 font-medium cursor-not-allowed">
+                    <div class="flex items-center justify-between mb-1">
+                        <label data-i18n="lblConfirmacion" class="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Confirmación Automática (Folio)</label>
+                        <button type="button" onclick="regenerarFolioActual()" class="text-[11px] font-bold text-zinc-700 hover:text-zinc-950 flex items-center gap-1 bg-zinc-100 hover:bg-zinc-200 px-2 py-0.5 rounded-lg border border-zinc-200 transition-all active:scale-95" title="Generar un nuevo folio para esta reserva">
+                            <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span data-i18n="btnNuevoFolio">Nuevo Folio</span>
+                        </button>
+                    </div>
+                    <input type="text" id="confirmacion" readonly class="w-full px-3.5 py-2 bg-zinc-100/90 border border-zinc-200 rounded-xl text-sm font-mono text-zinc-800 font-bold cursor-not-allowed">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
@@ -363,10 +370,54 @@
         let activeReservaIndex = 0;
         let reservasData = [];
 
+        // Genera un identificador único aleatorio para garantizar folios nuevos sin repetición
+        function generarIdAleatorio() {
+            const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+            let id = '';
+            for (let i = 0; i < 4; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return id;
+        }
+
+        // Obtiene el folio completo de la reserva asegurando que cada una tenga su código único
+        function obtenerFolioReserva(res) {
+            if (!res.folioCode) {
+                res.folioCode = generarIdAleatorio();
+            }
+            const fechaServicio = res.fechaServicio || '';
+            const adultos = res.adultos || 1;
+            const menores = res.menores || 0;
+            const totalPax = adultos + menores;
+
+            let fechaPart = 'XXXXXX';
+            if (fechaServicio && fechaServicio !== '---') {
+                const p = fechaServicio.split('-');
+                if (p.length === 3) {
+                    fechaPart = `${p[0].substring(2)}${p[1]}${p[2]}`;
+                }
+            } else {
+                const hoy = new Date();
+                fechaPart = `${hoy.getFullYear().toString().substring(2)}${String(hoy.getMonth() + 1).padStart(2, '0')}${String(hoy.getDate()).padStart(2, '0')}`;
+            }
+
+            return `ACT-${fechaPart}-${res.folioCode}-${totalPax}`;
+        }
+
+        // Regenera un folio nuevo para la reserva actualmente activa
+        function regenerarFolioActual() {
+            if (reservasData[activeReservaIndex]) {
+                reservasData[activeReservaIndex].folioCode = generarIdAleatorio();
+                renderAllVouchers();
+                mostrarToast(dictionary[currentLang].msgNuevoFolio || "¡Nuevo folio generado!");
+            }
+        }
+
         function createDefaultReserva(num) {
             const today = new Date().toISOString().split('T')[0];
             return {
                 id: num,
+                folioCode: generarIdAleatorio(), // Folio único generado por cada reserva
                 nombreCliente: '',
                 telefono: '',
                 hotel: '',
@@ -426,7 +477,9 @@
                 lblTC: "T.C. Selección",
                 lblEquivalencia: "Equivalencia Estimada",
                 lblNotas: "Notas / Observaciones del Servicio",
-                lblConfirmacion: "Confirmación Automática",
+                lblConfirmacion: "Confirmación Automática (Folio)",
+                btnNuevoFolio: "Nuevo Folio",
+                msgNuevoFolio: "¡Nuevo folio generado!",
                 btnImprimir: "Imprimir / PDF",
                 btnImagen: "Imagen",
 
@@ -460,7 +513,7 @@
                 summarySubTitle: "",
                 summaryClientHeader: "Resumen de Reservas de:",
                 summaryTotalBookings: "Total de Servicios Contratados:",
-                summaryTableCode: "Código / ID",
+                summaryTableCode: "Código / Folio",
                 summaryTableDate: "Fecha Servicio",
                 summaryTableActivity: "Actividad / Embarcación",
                 summaryTablePax: "Pasajeros",
@@ -510,7 +563,9 @@
                 lblTC: "Ex. Rate",
                 lblEquivalencia: "Est. Conversion",
                 lblNotas: "Service Notes / Special Remarks",
-                lblConfirmacion: "Confirmation Code",
+                lblConfirmacion: "Confirmation Code (Folio)",
+                btnNuevoFolio: "New Folio",
+                msgNuevoFolio: "New folio generated!",
                 btnImprimir: "Print / PDF",
                 btnImagen: "Save Image",
 
@@ -544,7 +599,7 @@
                 summarySubTitle: "",
                 summaryClientHeader: "Reservations Summary for:",
                 summaryTotalBookings: "Total Booked Services:",
-                summaryTableCode: "Code / ID",
+                summaryTableCode: "Code / Folio",
                 summaryTableDate: "Service Date",
                 summaryTableActivity: "Activity / Vessel",
                 summaryTablePax: "Guests",
@@ -763,6 +818,12 @@
             document.getElementById('saldo').value = data.saldo;
             document.getElementById('tipoCambio').value = data.tipoCambio || '20.00';
             document.getElementById('notas').value = data.notas || '';
+
+            // Reflejar el folio único en el campo de confirmación
+            const folioField = document.getElementById('confirmacion');
+            if (folioField) {
+                folioField.value = obtenerFolioReserva(data);
+            }
         }
 
         function updateSelectOptionsLabels() {
@@ -962,6 +1023,12 @@
             const currentSym = getSimboloDivisa(currentData.divisa);
             document.getElementById('txt-balance-total').textContent = `${currentSym}${currentTot.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})} ${currentData.divisa}`;
 
+            // Actualizar la confirmación automática con el folio único activo
+            const confInput = document.getElementById('confirmacion');
+            if (confInput) {
+                confInput.value = obtenerFolioReserva(currentData);
+            }
+
             const summaryWrapper = document.getElementById('summary-sheet-wrapper');
             if (totalReservasCount > 1) {
                 summaryWrapper.classList.remove('hidden');
@@ -997,11 +1064,8 @@
 
             const actividadFinal = (actSel === "Otros") ? (otraAct || '---') : (actSel || '---');
 
-            let codigo = "ACT-XXXXXX-" + totalPax;
-            if (fechaServicio !== '---') {
-                const p = fechaServicio.split('-');
-                codigo = `ACT-${p[0].substring(2)}${p[1]}${p[2]}-${totalPax}`;
-            }
+            // Uso del folio único de la reserva
+            const codigo = obtenerFolioReserva(res);
 
             let txtPrevConv = "---";
             if (saldo > 0) {
@@ -1201,11 +1265,8 @@
                 const menores = item.menores || 0;
                 const totalPax = adultos + menores;
 
-                let codigo = "ACT-XXXXXX-" + totalPax;
-                if (fechaServ !== '---') {
-                    const p = fechaServ.split('-');
-                    codigo = `ACT-${p[0].substring(2)}${p[1]}${p[2]}-${totalPax}`;
-                }
+                // Uso del folio único de cada servicio en la tabla
+                const codigo = obtenerFolioReserva(item);
 
                 return `
                     <tr class="border-b border-zinc-200 text-xs text-zinc-800 ${idx % 2 === 0 ? 'bg-zinc-50/50' : 'bg-white'}">
@@ -1332,6 +1393,7 @@
                 q.append(`sal_${i}`, res.saldo || 0);
                 q.append(`d_${i}`, res.divisa || 'MXN');
                 q.append(`tc_${i}`, res.tipoCambio || 20);
+                if (res.folioCode) q.append(`fol_${i}`, res.folioCode);
                 if (res.notas) q.append(`no_${i}`, res.notas);
             }
 
@@ -1382,6 +1444,7 @@
                     if (q.has(`sal_${i}`)) res.saldo = q.get(`sal_${i}`);
                     if (q.has(`d_${i}`)) res.divisa = q.get(`d_${i}`);
                     if (q.has(`tc_${i}`)) res.tipoCambio = q.get(`tc_${i}`);
+                    if (q.has(`fol_${i}`)) res.folioCode = q.get(`fol_${i}`);
                     if (q.has(`no_${i}`)) res.notas = q.get(`no_${i}`);
                 }
 
@@ -1414,7 +1477,7 @@
             toast.classList.remove('opacity-0');
             setTimeout(() => {
                 toast.classList.add('opacity-0');
-            }, 4500);
+            }, 3500);
         }
 
         function imprimirVoucher() {
